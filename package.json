@@ -16,9 +16,7 @@
     "gulp-uglify": "^1.4.2",
     "jschannel": "^1.0.0",
     "lens-extension-bridge": "git+ssh://git@git.corp.adobe.com:reactor/lens-extension-bridge.git",
+    "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0"
-  },
-  "devDependencies": {
-    "vinyl-buffer": "^1.0.0"
   }
 }

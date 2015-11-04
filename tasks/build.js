@@ -2,7 +2,6 @@
 
 var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
-var path = require('path');
 var browserify = require('browserify');
 var eventStream = require('event-stream');
 var source = require('vinyl-source-stream');
@@ -11,8 +10,8 @@ var buffer = require('vinyl-buffer');
 module.exports = function(gulp) {
   gulp.task("build", function() {
     var paths = [
-      require.resolve('lens-extension-bridge/src/extensionBridge.contentWindow.js'),
-      require.resolve('jschannel')
+      require.resolve('jschannel'),
+      require.resolve('lens-extension-bridge/src/extensionBridge.contentWindow.js')
     ];
 
     var srcStream = gulp.src(paths);

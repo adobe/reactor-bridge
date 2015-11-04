@@ -22,7 +22,7 @@ module.exports = function(gulp) {
         .pipe(buffer());
 
     return eventStream.merge(ajvStream, srcStream)
-      .pipe(concat("bundle.min.js"))
+      .pipe(concat("iframe-utils.bundle.min.js"))
       .pipe(uglify())
       .pipe(gulp.dest("dist/"));
   });

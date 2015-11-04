@@ -1,0 +1,1 @@
+window.Ajv = require('ajv');

@@ -21,7 +21,7 @@ module.exports = function(gulp) {
 
     var srcStream = gulp.src(paths);
     var ajvStream =
-      browserify('./src/ajv.js')
+      browserify(path.join(__dirname, '../src/ajv.js'))
         .bundle()
         .pipe(source('ajv.bundle.js'))
         .pipe(buffer());
@@ -29,7 +29,7 @@ module.exports = function(gulp) {
     return eventStream.merge(ajvStream, srcStream)
       .pipe(concat("iframeutils.bundle.min.js"))
       .pipe(uglify())
-      .pipe(gulp.dest("dist/js/"));
+      .pipe(gulp.dest(path.join(__dirname, '../dist/js')));
   });
 
   gulp.task("iframeutilsbuilder:buildCSS", function() {
@@ -43,13 +43,13 @@ module.exports = function(gulp) {
     return srcStream
       .pipe(minifyCSS())
       .pipe(concat("iframeutils.bundle.min.css"))
-      .pipe(gulp.dest("dist/css/"));
+      .pipe(gulp.dest(path.join(__dirname, '../dist/css')));
   });
 
   gulp.task("iframeutilsbuilder:copyResources", function() {
     var coralUiPath = path.dirname(require.resolve('coralui/build/js/coral'));
     return gulp.src([path.join(coralUiPath, '..', 'resources', '**/*')])
-      .pipe(gulp.dest('dist/resources/'));
+      .pipe(gulp.dest(path.join(__dirname, '../dist/resources')));
   });
 
   gulp.task('iframeutilsbuilder:build', [

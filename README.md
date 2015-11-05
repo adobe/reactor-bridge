@@ -8,4 +8,4 @@ This project provides gulp tasks for creating a bundle file that can be injected
 * [Coral UI](https://git.corp.adobe.com/Coral/coralui)
 
 # building
-To build the bundle file, run `gulp iframeutilsbuilder` from the command line within your project's directory. The bundle files will be placed in the `dist` folder.
+To build the bundle file, run `gulp iframeutilsbuilder:build` from the command line within your project's directory. The bundle files will be placed in the `dist` folder.

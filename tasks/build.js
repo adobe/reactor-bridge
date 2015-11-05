@@ -52,7 +52,7 @@ module.exports = function(gulp) {
       .pipe(gulp.dest('dist/resources/'));
   });
 
-  gulp.task('iframeutilsbuilder', [
+  gulp.task('iframeutilsbuilder:build', [
     'iframeutilsbuilder:buildCSS',
     'iframeutilsbuilder:buildJS',
     'iframeutilsbuilder:copyResources'

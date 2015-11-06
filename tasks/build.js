@@ -4,14 +4,22 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var minifyCSS = require('gulp-minify-css');
 var browserify = require('browserify');
-var eventStream = require('event-stream');
 var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
 var path = require('path');
 
 module.exports = function(gulp) {
-  gulp.task("iframeutilsbuilder:buildJS", function() {
+  gulp.task("iframeutilsbuilder:buildAJV", function() {
+
+    console.log(path.join(__dirname, '../dist/js/'));
+    return browserify(path.join(__dirname, '../src/ajv.js'))
+      .bundle()
+      .pipe(source('ajv.bundle.js'))
+      .pipe(gulp.dest(path.join(__dirname, '../dist/js/')));
+  });
+
+  gulp.task("iframeutilsbuilder:buildJS", ['iframeutilsbuilder:buildAJV'], function() {
     var paths = [
+      path.join(__dirname, '../dist/js/ajv.bundle.js'),
       require.resolve('jschannel'),
       require.resolve('lens-extension-bridge/src/extensionBridge.contentWindow.js'),
       require.resolve('coralui/build/js/libs/jquery'),
@@ -19,14 +27,7 @@ module.exports = function(gulp) {
       require.resolve('coralui/build/js/coral')
     ];
 
-    var srcStream = gulp.src(paths);
-    var ajvStream =
-      browserify(path.join(__dirname, '../src/ajv.js'))
-        .bundle()
-        .pipe(source('ajv.bundle.js'))
-        .pipe(buffer());
-
-    return eventStream.merge(ajvStream, srcStream)
+    return gulp.src(paths)
       .pipe(concat("iframeutils.bundle.min.js"))
       .pipe(uglify())
       .pipe(gulp.dest(path.join(__dirname, '../dist/js')));

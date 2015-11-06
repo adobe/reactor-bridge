@@ -6,15 +6,21 @@ var minifyCSS = require('gulp-minify-css');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var path = require('path');
+var clean = require('gulp-clean');
 
 module.exports = function(gulp) {
   gulp.task("iframeutilsbuilder:buildAJV", function() {
 
-    console.log(path.join(__dirname, '../dist/js/'));
     return browserify(path.join(__dirname, '../src/ajv.js'))
       .bundle()
       .pipe(source('ajv.bundle.js'))
       .pipe(gulp.dest(path.join(__dirname, '../dist/js/')));
+  });
+
+  gulp.task("iframeutilsbuilder:cleanAJV", ["iframeutilsbuilder:buildJS"], function() {
+
+    return gulp.src(path.join(__dirname, '../dist/js/ajv.bundle.js'), {read: false})
+      .pipe(clean());
   });
 
   gulp.task("iframeutilsbuilder:buildJS", ['iframeutilsbuilder:buildAJV'], function() {
@@ -56,6 +62,7 @@ module.exports = function(gulp) {
   gulp.task('iframeutilsbuilder:build', [
     'iframeutilsbuilder:buildCSS',
     'iframeutilsbuilder:buildJS',
-    'iframeutilsbuilder:copyResources'
+    'iframeutilsbuilder:copyResources',
+    'iframeutilsbuilder:cleanAJV'
   ]);
 };

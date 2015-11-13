@@ -19,7 +19,7 @@ module.exports = function(gulp) {
 
     var sourceStream = gulp.src(paths);
     var extensionBridgeStream = gulp
-      .src(['src/extensionBridge.contentWindow.js'])
+      .src([path.join(__dirname, '../src/extensionBridge.contentWindow.js')])
       .pipe(webpack({
         module: {
           loaders: [{ test: /\.json$/, loader: "json" }]

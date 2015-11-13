@@ -4,7 +4,7 @@ var concat = require('gulp-concat');
 var uglify = require('gulp-uglify');
 var minifyCSS = require('gulp-minify-css');
 var path = require('path');
-var webpack = require('gulp-webpack');
+var webpack = require('webpack-stream');
 var eventStream = require('event-stream');
 
 module.exports = function(gulp) {

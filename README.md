@@ -1,6 +1,6 @@
-# turbine-gulp-iframe-utils-builder
+# turbine-gulp-windgoogles
 
-This project provides gulp tasks for creating a bundle file that can be injected by extension developers in their views. The bundle file is containing:
+This project provides gulp tasks for creating the bundle files used by reactor project. The bundle file is containing:
 
 * [jschannel](https://github.com/mozilla/jschannel)
 * [extensionBridge.contentWindow](https://git.corp.adobe.com/reactor/lens-extension-bridge/tree/master/src)

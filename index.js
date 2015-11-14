@@ -1,4 +1,4 @@
-var extensionBridge = require('lens-extension-bridge/src/extensionBridge');
+var extensionBridge = require('lens-extension-bridge/src/extensionBridge')();
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('frameboyant/frameboyant')();
 

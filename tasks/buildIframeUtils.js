@@ -11,22 +11,26 @@ module.exports = function(gulp) {
   gulp.task("windgoggles:buildIframeUtilsJS", function() {
     var paths = [
       require.resolve('iframe-resizer/js/iframeResizer.contentWindow'),
-      require.resolve('frameboyant/frameboyant.contentWindow'),
       require.resolve('coralui/build/js/libs/jquery'),
       require.resolve('coralui/build/js/libs/moment'),
       require.resolve('coralui/build/js/coral')
     ];
 
     var sourceStream = gulp.src(paths);
+
+    var frameboyantStream = gulp
+      .src(require.resolve('../src/frameboyant.contentWindow.js'))
+      .pipe(webpack());
+
     var extensionBridgeStream = gulp
-      .src([path.join(__dirname, '../src/extensionBridge.contentWindow.js')])
+      .src(path.join(__dirname, '../src/extensionBridge.contentWindow.js'))
       .pipe(webpack({
         module: {
           loaders: [{ test: /\.json$/, loader: "json" }]
         }
       }));
 
-    return eventStream.merge(sourceStream, extensionBridgeStream)
+    return eventStream.merge(sourceStream, frameboyantStream, extensionBridgeStream)
       .pipe(concat("iframeutils.min.js"))
       .pipe(uglify())
       .pipe(gulp.dest(path.join(__dirname, '../dist/js')));

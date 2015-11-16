@@ -1,8 +1,6 @@
 'use strict';
 
 var concat = require('gulp-concat');
-var uglify = require('gulp-uglify');
-var minifyCSS = require('gulp-minify-css');
 var path = require('path');
 var webpack = require('webpack-stream');
 var eventStream = require('event-stream');
@@ -31,22 +29,20 @@ module.exports = function(gulp) {
       }));
 
     return eventStream.merge(sourceStream, frameboyantStream, extensionBridgeStream)
-      .pipe(concat("iframeutils.min.js"))
-      .pipe(uglify())
+      .pipe(concat("iframeutils.js"))
       .pipe(gulp.dest(path.join(__dirname, '../dist/js')));
   });
 
   gulp.task("windgoggles:buildIframeUtilsCSS", function() {
     var coralUiPath = path.dirname(require.resolve('coralui/build/js/coral'));
     var paths = [
-      path.join(coralUiPath, '..', 'css', 'coral.min.css')
+      path.join(coralUiPath, '..', 'css', 'coral.css')
     ];
 
     var srcStream = gulp.src(paths);
 
     return srcStream
-      .pipe(minifyCSS())
-      .pipe(concat("iframeutils.min.css"))
+      .pipe(concat("iframeutils.css"))
       .pipe(gulp.dest(path.join(__dirname, '../dist/css')));
   });
 

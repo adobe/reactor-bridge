@@ -2,11 +2,11 @@ var extensionBridge = require('lens-extension-bridge/src/extensionBridge')();
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('frameboyant/frameboyant')();
 
-var WindGoogles = function(iframe) {
+var WindGoggles = function(iframe) {
   this.iframe = iframe;
 };
 
-WindGoogles.prototype = {
+WindGoggles.prototype = {
   initialize: function() {
     frameboyant.addIframe(this.iframe);
     iframeResizer({checkOrigin: false}, this.iframe);
@@ -31,8 +31,8 @@ WindGoogles.prototype = {
 };
 
 module.exports = function(iframe) {
-  var windGooglesFrame = new WindGoogles(iframe);
-  windGooglesFrame.initialize();
+  var windGogglesFrame = new WindGoggles(iframe);
+  windGogglesFrame.initialize();
 
-  return windGooglesFrame;
+  return windGogglesFrame;
 };

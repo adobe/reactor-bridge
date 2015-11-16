@@ -1,4 +1,4 @@
-# turbine-windgoogles
+# turbine-windgoggles
 
 This project provides classes and gulp tasks used by reactor project. 
 

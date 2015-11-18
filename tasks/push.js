@@ -8,7 +8,7 @@ var fs = require('fs');
 var GulpSSH = require('gulp-ssh');
 var through = require('through2');
 
-var versionFound;
+
 var packageData = require(path.join(__dirname, '../package.json'));
 var version = packageData.version;
 
@@ -25,25 +25,28 @@ var gulpSSH = new GulpSSH({
   sshConfig: config
 });
 
+function checkVersionExists(callback) {
+  gulpSSH
+    .exec(['ls -a ../activation/reactor/iframe/' + version])
+    .pipe(through.obj(function (chunk, enc, cb) {
+      callback(!(/No such file or directory/.test(String(chunk.contents))));
+      cb();
+    }));
+}
+
 module.exports = function(gulp) {
-  gulp.task('windgoggles:checkVersionExists', function () {
-    return gulpSSH
-      .exec(['ls -a ../activation/reactor/iframe/' + version])
-      .pipe(through.obj(function (chunk, enc, callback) {
-        versionFound = !(/No such file or directory/.test(String(chunk.contents)));
-        callback()
-      }));
-  });
-
-  gulp.task('windgoggles:iframePush', ['windgoggles:checkVersionExists', 'windgoggles:minify'], function () {
-    if (versionFound) {
-      console.error('Version `' + version + '` is already present on CDN.');
-      return;
-    }
-
-    return gulp
-      .src(path.join(__dirname, '../dist/**'))
-      .pipe(gulpSSH.dest(path.join(config.basePath, version)));
+  gulp.task('windgoggles:iframePush', ['windgoggles:minify'], function (callback) {
+    checkVersionExists(function(versionFound) {
+      if (versionFound) {
+        console.error('Version `' + version + '` is already present on CDN.');
+        callback();
+      } else {
+        gulp
+          .src(path.join(__dirname, '../dist/**'))
+          .pipe(gulpSSH.dest(path.join(config.basePath, version)))
+          .on('finish', callback);
+      }
+    });
   });
 
   gulp.task('windgoggles:push', ['windgoggles:iframePush']);

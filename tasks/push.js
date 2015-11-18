@@ -1,12 +1,9 @@
 'use strict';
-var getUserHome = function() {
-  return process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-};
-
 var path = require('path');
 var fs = require('fs');
 var GulpSSH = require('gulp-ssh');
 var through = require('through2');
+var os = require('os');
 
 
 var packageData = require(path.join(__dirname, '../package.json'));
@@ -16,7 +13,7 @@ var config = {
   host: 'adobetag.upload.akamai.com',
   port: 22,
   username: 'sshacs',
-  privateKey: fs.readFileSync(path.join(getUserHome(), '.ssh/dtm.akamai.prod')),
+  privateKey: fs.readFileSync(path.join(os.homedir(), '.ssh/dtm.akamai.prod')),
   basePath: '/126057/activation/reactor/iframe/'
 };
 

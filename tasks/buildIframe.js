@@ -6,7 +6,7 @@ var webpack = require('webpack-stream');
 var eventStream = require('event-stream');
 
 module.exports = function(gulp) {
-  gulp.task("windgoggles:buildIframeUtilsJS", function() {
+  gulp.task("windgoggles:buildIframeJS", function() {
     var paths = [
       require.resolve('iframe-resizer/js/iframeResizer.contentWindow'),
       require.resolve('coralui/build/js/libs/jquery'),
@@ -29,11 +29,11 @@ module.exports = function(gulp) {
       }));
 
     return eventStream.merge(sourceStream, frameboyantStream, extensionBridgeStream)
-      .pipe(concat("iframeutils.js"))
+      .pipe(concat("iframe.js"))
       .pipe(gulp.dest(path.join(__dirname, '../dist/js')));
   });
 
-  gulp.task("windgoggles:buildIframeUtilsCSS", function() {
+  gulp.task("windgoggles:buildIframeCSS", function() {
     var coralUiPath = path.dirname(require.resolve('coralui/build/js/coral'));
     var paths = [
       path.join(coralUiPath, '..', 'css', 'coral.css')
@@ -42,19 +42,19 @@ module.exports = function(gulp) {
     var srcStream = gulp.src(paths);
 
     return srcStream
-      .pipe(concat("iframeutils.css"))
+      .pipe(concat("iframe.css"))
       .pipe(gulp.dest(path.join(__dirname, '../dist/css')));
   });
 
-  gulp.task("windgoggles:copyIframeUtilsResources", function() {
+  gulp.task("windgoggles:copyResources", function() {
     var coralUiPath = path.dirname(require.resolve('coralui/build/js/coral'));
     return gulp.src([path.join(coralUiPath, '..', 'resources', '**/*')])
       .pipe(gulp.dest(path.join(__dirname, '../dist/resources')));
   });
 
-  gulp.task('windgoggles:buildIframeUtils', [
-    'windgoggles:buildIframeUtilsCSS',
-    'windgoggles:buildIframeUtilsJS',
-    'windgoggles:copyIframeUtilsResources'
+  gulp.task('windgoggles:buildIframe', [
+    'windgoggles:buildIframeCSS',
+    'windgoggles:buildIframeJS',
+    'windgoggles:copyResources'
   ]);
 };

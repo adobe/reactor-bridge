@@ -6,7 +6,7 @@ var through = require('through2');
 var os = require('os');
 
 module.exports = function(gulp) {
-  gulp.task('windgoggles:iframePush', ['windgoggles:minify'], function (callback) {
+  gulp.task('windgoggles:push', ['windgoggles:minify'], function (callback) {
     var packageData = require(path.join(__dirname, '../package.json'));
     var version = packageData.version;
 
@@ -44,6 +44,4 @@ module.exports = function(gulp) {
       }
     });
   });
-
-  gulp.task('windgoggles:push', ['windgoggles:iframePush']);
 };

@@ -3,16 +3,20 @@ var attachSenders = require('./attachSenders');
 var attachReceivers = require('./attachReceivers');
 var Channel = require('jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
-var frameboyant = require('frameboyant/frameboyant')();
+var frameboyant = require('frameboyant/frameboyant');
 
-var channel;
+frameboyant.stylesAppliedCallback = function(iframe) {
+  if (iframe.__bridge && iframe.__bridge.initialRenderCompleteCallback) {
+    iframe.__bridge.initialRenderCompleteCallback();
+  }
+};
 
 module.exports = function(iframe) {
-  if (channel) {
-    channel.destroy();
+  if (iframe.__channel) {
+    iframe.__channel.destroy();
   }
   
-  channel = Channel.build({
+  var channel = Channel.build({
     window: iframe.contentWindow,
     origin: '*',
     scope: 'extensionBridge'
@@ -23,19 +27,19 @@ module.exports = function(iframe) {
   attachSenders(bridge, channel);
   attachReceivers(bridge, channel);
 
-  frameboyant.initialRenderCompleteCallback = function() {
-    if (bridge.initialRenderCompleteCallback) {
-      bridge.initialRenderCompleteCallback();
-    }
-  };
-
   frameboyant.addIframe(iframe);
   iframeResizer({checkOrigin: false}, iframe);
 
   bridge.destroy = function() {
     frameboyant.removeIframe(iframe);
     iframe.iFrameResizer.close();
+
+    delete iframe.__channel;
+    delete iframe.__bridge;
   };
+
+  iframe.__channel = channel;
+  iframe.__bridge = bridge;
 
   return bridge;
 };

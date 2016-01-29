@@ -6,7 +6,7 @@ var webpack = require('webpack-stream');
 var eventStream = require('event-stream');
 
 module.exports = function(gulp) {
-  gulp.task('extensionBridge:buildIframe', function() {
+  gulp.task('extensionBridge:build', function() {
     var paths = [
       require.resolve('iframe-resizer/js/iframeResizer.contentWindow')
     ];

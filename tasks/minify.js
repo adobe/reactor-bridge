@@ -5,7 +5,7 @@ var path = require('path');
 var rename = require('gulp-rename')
 
 module.exports = function(gulp) {
-  gulp.task('windgoggles:minify', ['windgoggles:buildIframeJS'], function() {
+  gulp.task('extensionBridge:minify', ['extensionBridge:build'], function() {
     return gulp.src(path.join(__dirname, '../dist/js/iframe.js'))
       .pipe(uglify())
       .pipe(rename('iframe.min.js'))

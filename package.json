@@ -1,10 +1,10 @@
 {
   "name": "extension-bridge",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "",
   "repository": {
     "type": "git",
-    "url": "git@git.corp.adobe.com:reactor/turbine-gulp-iframe-utils-builder.git"
+    "url": "git@git.corp.adobe.com:reactor/extension-bridge.git"
   },
   "dependencies": {
     "event-stream": "^3.3.2",

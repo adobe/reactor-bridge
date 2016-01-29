@@ -6,7 +6,7 @@ var through = require('through2');
 var os = require('os');
 
 module.exports = function(gulp) {
-  gulp.task('windgoggles:push', ['windgoggles:minify'], function (callback) {
+  gulp.task('extensionBridge:push', ['extensionBridge:minify'], function (callback) {
     var packageData = require(path.join(__dirname, '../package.json'));
     var version = packageData.version;
 

@@ -23,6 +23,12 @@ module.exports = function(iframe) {
   attachSenders(bridge, channel);
   attachReceivers(bridge, channel);
 
+  frameboyant.initialRenderCompleteCallback = function() {
+    if (bridge.initialRenderCompleteCallback) {
+      bridge.initialRenderCompleteCallback();
+    }
+  };
+
   frameboyant.addIframe(iframe);
   iframeResizer({checkOrigin: false}, iframe);
 

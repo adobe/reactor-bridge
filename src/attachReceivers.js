@@ -25,10 +25,4 @@ module.exports = function(bridge, channel) {
     bridge.openDataElementSelector(trans.complete);
     trans.delayReturn(true);
   });
-
-  channel.bind('initialRenderComplete', function() {
-    if (bridge.initialRenderCompleteCallback) {
-      bridge.initialRenderCompleteCallback();
-    }
-  });
 };

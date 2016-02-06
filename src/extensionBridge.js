@@ -3,7 +3,7 @@ var attachSenders = require('./attachSenders');
 var attachReceivers = require('./attachReceivers');
 var Channel = require('jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
-var frameboyant = require('frameboyant/frameboyant');
+var frameboyant = require('@reactor/frameboyant/frameboyant');
 
 frameboyant.stylesAppliedCallback = function(iframe) {
   if (iframe.__bridge && iframe.__bridge.initialRenderCompleteCallback) {

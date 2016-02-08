@@ -1,5 +1,5 @@
-var Channel = require('jschannel')
-var frameboyant = require('frameboyant/frameboyant.contentWindow');
+var Channel = require('jschannel');
+var frameboyant = require('@reactor/frameboyant/frameboyant.contentWindow');
 var attachSenders = require('./attachSenders');
 var attachReceivers = require('./attachReceivers');
 var adaptFrameboyantForCoralUI = require('./adaptFrameboyantForCoralUI');

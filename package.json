@@ -1,14 +1,21 @@
 {
-  "name": "extension-bridge",
+  "name": "@reactor/extension-bridge",
   "version": "0.0.10",
-  "description": "",
+  "description": "Gulp tasks used by the reactor project.",
+  "author": {
+    "name": "DTM",
+    "email": "DTM-Engineering@adobe.com"
+  },
   "repository": {
     "type": "git",
     "url": "git@git.corp.adobe.com:reactor/extension-bridge.git"
   },
+  "publishConfig": {
+    "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
+  },
   "dependencies": {
     "event-stream": "^3.3.2",
-    "frameboyant": "git+https://fcf1e02afcceac6505ac6b6a43c26061c0b9bcaa:x-oauth-basic@git.corp.adobe.com/reactor/frameboyant.git",
+    "@reactor/frameboyant": "^1.0.0",
     "globby": "^3.0.1",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",

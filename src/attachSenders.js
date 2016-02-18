@@ -8,12 +8,12 @@ module.exports = function(bridge, channel) {
       }
     });
   };
-  bridge.getConfig = function(callback) {
+  bridge.getSettings = function(callback) {
     channel.call({
-      method: 'getConfig',
+      method: 'getSettings',
       success: callback,
       error: function(name, message) {
-        console.error('An error occurred while getting config.', name, message);
+        console.error('An error occurred while getting settings.', name, message);
       }
     });
   };

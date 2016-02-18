@@ -12,14 +12,14 @@ module.exports = function(bridge, channel) {
     return result;
   });
 
-  bridge.getConfig = function() {console.error('You must define extensionBridge.getConfig'); };
-  channel.bind('getConfig', function() {
+  bridge.getSettings = function() {console.error('You must define extensionBridge.getSettings'); };
+  channel.bind('getSettings', function() {
     var result;
 
     try {
-      result = bridge.getConfig();
+      result = bridge.getSettings();
     } catch (error) {
-      console.error('Error getting config', error.stack);
+      console.error('Error getting settings', error.stack);
     }
 
     return result;

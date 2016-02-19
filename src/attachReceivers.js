@@ -1,4 +1,9 @@
-module.exports = function(bridge, channel) {
+var DOMReady = require('./readyForRender').DOMReady;
+module.exports = function(bridge, channel, iframe) {
+  channel.bind('DOMready', function(trans, params) {
+    DOMReady(iframe);
+  });
+
   bridge.openCodeEditor = function() {
     console.error('You must define extensionBridge.openCodeEditor');
   };

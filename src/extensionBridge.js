@@ -4,18 +4,15 @@ var attachReceivers = require('./attachReceivers');
 var Channel = require('jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
+var stylesReady = require('./readyForRender').stylesReady;
 
-frameboyant.stylesAppliedCallback = function(iframe) {
-  if (iframe.__bridge && iframe.__bridge.initialRenderCompleteCallback) {
-    iframe.__bridge.initialRenderCompleteCallback();
-  }
-};
+frameboyant.stylesAppliedCallback = stylesReady;
 
 module.exports = function(iframe) {
   if (iframe.__channel) {
     iframe.__channel.destroy();
   }
-  
+
   var channel = Channel.build({
     window: iframe.contentWindow,
     origin: '*',
@@ -25,7 +22,7 @@ module.exports = function(iframe) {
   var bridge = {};
 
   attachSenders(bridge, channel);
-  attachReceivers(bridge, channel);
+  attachReceivers(bridge, channel, iframe);
 
   frameboyant.addIframe(iframe);
   iframeResizer({checkOrigin: false}, iframe);

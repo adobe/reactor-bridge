@@ -13,6 +13,15 @@ var channel = Channel.build({
   scope: 'extensionBridge'
 });
 
+document.addEventListener("DOMContentLoaded", function(event) {
+  channel.notify({
+    method: 'DOMready',
+    error: function(name, message) {
+      console.error('An error occurred while triggering DOMready.', name, message);
+    }
+  });
+});
+
 attachSenders(bridge, channel);
 attachReceivers(bridge, channel);
 

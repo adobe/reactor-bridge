@@ -1,17 +1,31 @@
 'use strict';
-var attachSenders = require('./attachSenders');
-var attachReceivers = require('./attachReceivers');
+var getChannelSenders = require('./getChannelSenders');
+var attachChannelReceivers = require('./attachChannelReceivers');
 var Channel = require('jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
-var stylesReady = require('./readyForRender').stylesReady;
-
-frameboyant.stylesAppliedCallback = stylesReady;
+var Promise = require('native-promise-only');
 
 module.exports = function(iframe) {
-  if (iframe.__channel) {
-    iframe.__channel.destroy();
+  if (iframe.destroyExtensionBridge) {
+    iframe.destroyExtensionBridge();
   }
+
+  var resolveDomReadyPromise;
+  var domReadyPromise = new Promise(function(resolve) {
+    resolveDomReadyPromise = function() {
+      console.log('resolving DOM ready promise');
+      resolve();
+    };
+  });
+
+  var resolveStylesReadyPromise;
+  var stylesReadyPromise = new Promise(function(resolve) {
+    resolveStylesReadyPromise = function() {
+      console.log('resolving styles ready promise');
+      resolve();
+    };
+  });
 
   var channel = Channel.build({
     window: iframe.contentWindow,
@@ -19,24 +33,57 @@ module.exports = function(iframe) {
     scope: 'extensionBridge'
   });
 
-  var bridge = {};
+  var channelSenders = getChannelSenders(channel);
 
-  attachSenders(bridge, channel);
-  attachReceivers(bridge, channel, iframe);
-
-  frameboyant.addIframe(iframe);
-  iframeResizer({checkOrigin: false}, iframe);
-
-  bridge.destroy = function() {
-    frameboyant.removeIframe(iframe);
-    iframe.iFrameResizer.close();
-
-    delete iframe.__channel;
-    delete iframe.__bridge;
+  var bridge = {
+    init: channelSenders.init,
+    validate: channelSenders.validate,
+    getSettings: channelSenders.getSettings
   };
 
-  iframe.__channel = channel;
-  iframe.__bridge = bridge;
+  attachChannelReceivers(channel, {
+    domReadyCallback: resolveDomReadyPromise,
+    openCodeEditor: function() {
+      if (bridge.openCodeEditor) {
+        bridge.openCodeEditor.apply(null, arguments);
+      } else {
+        console.error('You must define extensionBridge.openCodeEditor');
+      }
+    },
+    openRegexTester: function() {
+      if (bridge.openRegexTester) {
+        bridge.openRegexTester.apply(null, arguments);
+      } else {
+        console.error('You must define extensionBridge.openRegexTester');
+      }
+    },
+    openDataElementSelector: function() {
+      if (bridge.openDataElementSelector) {
+        bridge.openDataElementSelector.apply(null, arguments);
+      } else {
+        console.error('You must define extensionBridge.openDataElementSelector');
+      }
+    }
+  });
+
+  bridge.initialRenderComplete = Promise.all([
+    stylesReadyPromise,
+    domReadyPromise
+  ]);
+
+  frameboyant.addIframe(iframe, {
+    stylesAppliedCallback: resolveStylesReadyPromise
+  });
+
+  iframeResizer({
+    checkOrigin: false
+  }, iframe);
+
+  iframe.destroyExtensionBridge = bridge.destroy = function() {
+    frameboyant.removeIframe(iframe);
+    iframe.iFrameResizer.close();
+    channel.destroy();
+  };
 
   return bridge;
 };

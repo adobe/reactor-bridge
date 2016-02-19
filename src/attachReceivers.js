@@ -1,7 +1,7 @@
-var DOMReady = require('./readyForRender').DOMReady;
+var domReady = require('./readyForRender').domReady;
 module.exports = function(bridge, channel, iframe) {
-  channel.bind('DOMready', function(trans, params) {
-    DOMReady(iframe);
+  channel.bind('domReady', function(trans, params) {
+    domReady(iframe);
   });
 
   bridge.openCodeEditor = function() {

@@ -15,9 +15,9 @@ var channel = Channel.build({
 
 document.addEventListener("DOMContentLoaded", function(event) {
   channel.notify({
-    method: 'DOMready',
+    method: 'domReady',
     error: function(name, message) {
-      console.error('An error occurred while triggering DOMready.', name, message);
+      console.error('An error occurred while triggering domReady.', name, message);
     }
   });
 });

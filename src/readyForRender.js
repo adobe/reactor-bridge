@@ -1,6 +1,6 @@
 function checkRenderReady(iframe) {
   if (
-    iframe.__DOMReady &&
+    iframe.__domReady &&
     iframe.__stylesReady &&
     iframe.__bridge &&
     iframe.__bridge.initialRenderCompleteCallback
@@ -10,8 +10,8 @@ function checkRenderReady(iframe) {
 };
 
 module.exports = {
-  DOMReady: function(iframe) {
-    iframe.__DOMReady = true;
+  domReady: function(iframe) {
+    iframe.__domReady = true;
     checkRenderReady(iframe);
   },
   stylesReady: function(iframe) {

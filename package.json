@@ -14,8 +14,8 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "dependencies": {
-    "event-stream": "^3.3.2",
     "@reactor/frameboyant": "^1.0.0",
+    "event-stream": "^3.3.2",
     "globby": "^4.0.0",
     "gulp": "^3.9.1",
     "gulp-concat": "^2.6.0",
@@ -25,6 +25,7 @@
     "iframe-resizer": "^3.5.0",
     "js-beautify": "^1.6.2",
     "json-loader": "^0.5.4",
+    "native-promise-only": "^0.8.1",
     "ssh2-streams": "0.0.21",
     "through2": "^2.0.1",
     "webpack-stream": "^3.1.0"

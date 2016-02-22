@@ -13,18 +13,12 @@ module.exports = function(iframe) {
 
   var resolveDomReadyPromise;
   var domReadyPromise = new Promise(function(resolve) {
-    resolveDomReadyPromise = function() {
-      console.log('resolving DOM ready promise');
-      resolve();
-    };
+    resolveDomReadyPromise = resolve;
   });
 
   var resolveStylesReadyPromise;
   var stylesReadyPromise = new Promise(function(resolve) {
-    resolveStylesReadyPromise = function() {
-      console.log('resolving styles ready promise');
-      resolve();
-    };
+    resolveStylesReadyPromise = resolve;
   });
 
   var channel = Channel.build({

@@ -4,22 +4,14 @@ var attachChannelReceivers = require('./attachChannelReceivers');
 var Channel = require('jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
-var Promise = require('native-promise-only');
+var createRenderCompleteState = require('./createRenderCompleteState');
 
-module.exports = function(iframe) {
+module.exports = function(iframe, options) {
   if (iframe.destroyExtensionBridge) {
     iframe.destroyExtensionBridge();
   }
 
-  var resolveDomReadyPromise;
-  var domReadyPromise = new Promise(function(resolve) {
-    resolveDomReadyPromise = resolve;
-  });
-
-  var resolveStylesReadyPromise;
-  var stylesReadyPromise = new Promise(function(resolve) {
-    resolveStylesReadyPromise = resolve;
-  });
+  var renderCompleteState = createRenderCompleteState(options.onInitialRenderComplete);
 
   var channel = Channel.build({
     window: iframe.contentWindow,
@@ -29,55 +21,53 @@ module.exports = function(iframe) {
 
   var channelSenders = getChannelSenders(channel);
 
-  var bridge = {
-    init: channelSenders.init,
-    validate: channelSenders.validate,
-    getSettings: channelSenders.getSettings
-  };
-
   attachChannelReceivers(channel, {
-    domReadyCallback: resolveDomReadyPromise,
+    domReadyCallback: renderCompleteState.markDomReady,
     openCodeEditor: function() {
-      if (bridge.openCodeEditor) {
-        bridge.openCodeEditor.apply(null, arguments);
+      if (options.openCodeEditor) {
+        options.openCodeEditor.apply(null, arguments);
       } else {
-        console.error('You must define extensionBridge.openCodeEditor');
+        console.error('You must define options.openCodeEditor');
       }
     },
     openRegexTester: function() {
-      if (bridge.openRegexTester) {
-        bridge.openRegexTester.apply(null, arguments);
+      if (options.openRegexTester) {
+        options.openRegexTester.apply(null, arguments);
       } else {
-        console.error('You must define extensionBridge.openRegexTester');
+        console.error('You must define options.openRegexTester');
       }
     },
     openDataElementSelector: function() {
-      if (bridge.openDataElementSelector) {
-        bridge.openDataElementSelector.apply(null, arguments);
+      if (options.openDataElementSelector) {
+        options.openDataElementSelector.apply(null, arguments);
       } else {
-        console.error('You must define extensionBridge.openDataElementSelector');
+        console.error('You must define options.openDataElementSelector');
       }
     }
   });
 
-  bridge.initialRenderComplete = Promise.all([
-    stylesReadyPromise,
-    domReadyPromise
-  ]);
-
   frameboyant.addIframe(iframe, {
-    stylesAppliedCallback: resolveStylesReadyPromise
+    stylesAppliedCallback: renderCompleteState.markStylesReady
   });
 
   iframeResizer({
     checkOrigin: false
   }, iframe);
 
-  iframe.destroyExtensionBridge = bridge.destroy = function() {
+  var destroyExtensionBridge = function() {
     frameboyant.removeIframe(iframe);
+    // This also removes the iframe from its parent. Not really what we're going for
+    // (we're just trying to clean up listeners and such) but not hurting anything at the moment.
     iframe.iFrameResizer.close();
     channel.destroy();
   };
 
-  return bridge;
+  iframe.destroyExtensionBridge = destroyExtensionBridge;
+
+  return {
+    init: channelSenders.init,
+    validate: channelSenders.validate,
+    getSettings: channelSenders.getSettings,
+    destroy: destroyExtensionBridge
+  };
 };

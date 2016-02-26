@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "dependencies": {
-    "@reactor/frameboyant": "^2.0.0",
+    "@reactor/frameboyant": "^2.1.0",
     "event-stream": "^3.3.2",
     "globby": "^4.0.0",
     "gulp": "^3.9.1",

@@ -5,7 +5,10 @@ var attachChannelReceivers = require('./attachChannelReceivers');
 var adaptFrameboyantForCoralUI = require('./adaptFrameboyantForCoralUI');
 var adaptFrameboyantForIframeResizer = require('./adaptFrameboyantForIframeResizer');
 
-var bridge = {};
+adaptFrameboyantForCoralUI(frameboyant);
+adaptFrameboyantForIframeResizer(frameboyant);
+
+var registeredOptions = {};
 
 var channel = Channel.build({
   window: parent,
@@ -24,58 +27,59 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 var channelSenders = getChannelSenders(channel);
 
-bridge.openCodeEditor = channelSenders.openCodeEditor;
-bridge.openDataElementSelector = channelSenders.openDataElementSelector;
-bridge.openRegexTester = channelSenders.openRegexTester;
-
 attachChannelReceivers(channel, {
   init: function(transaction, options) {
-    if (bridge.init) {
+    if (registeredOptions.init) {
       try {
-        bridge.init(options);
+        registeredOptions.init(options);
       } catch (error) {
         console.error('Error initializing', error.stack);
       }
     } else {
-      console.error('You must define extensionBridge.init');
+      console.error('You must register an init function using extensionBridge.register().');
     }
   },
   validate: function() {
-    if (bridge.validate) {
+    if (registeredOptions.validate) {
       var result;
 
       try {
-        result = bridge.validate();
+        result = registeredOptions.validate();
       } catch (error) {
         console.error('Error validating', error.stack);
       }
 
       return result;
     } else {
-      console.error('You must define extensionBridge.validate');
+      console.error('You must register a validate function using extensionBridge.register().');
     }
   },
   getSettings: function() {
-    if (bridge.getSettings) {
+    if (registeredOptions.getSettings) {
       var result;
 
       try {
-        result = bridge.getSettings();
+        result = registeredOptions.getSettings();
       } catch (error) {
         console.error('Error getting settings', error.stack);
       }
 
       return result;
     } else {
-      console.error('You must define extensionBridge.getSettings');
+      console.error('You must register a getSettings function using extensionBridge.register().');
     }
   }
 });
 
-adaptFrameboyantForCoralUI(frameboyant);
-adaptFrameboyantForIframeResizer(frameboyant);
-
-bridge.requestFrontLock = frameboyant.requestFrontLock;
-bridge.releaseFrontLock = frameboyant.releaseFrontLock;
-
-window.extensionBridge = bridge;
+window.extensionBridge = {
+  requestFrontLock: frameboyant.requestFrontLock,
+  releaseFrontLock: frameboyant.releaseFrontLock,
+  openCodeEditor: channelSenders.openCodeEditor,
+  openDataElementSelector: channelSenders.openDataElementSelector,
+  openRegexTester: channelSenders.openRegexTester,
+  register: function(options) {
+    Object.keys(options).forEach(function(key) {
+      registeredOptions[key] = options[key];
+    });
+  }
+};

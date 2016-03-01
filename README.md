@@ -15,6 +15,6 @@ The bundle file is containing:
 [status-url]: https://dtm-builder.ut1.mcps.adobe.net/job/extension-bridge
 [status-image]: https://dtm-builder.ut1.mcps.adobe.net/buildStatus/icon?job=extension-bridge
 [npm-url]: https://artifactory.corp.adobe.com/artifactory/webapp/#/artifacts/browse/tree/General/npm-mcps-release-local/@reactor/extension-bridge/-/@reactor
-[npm-image]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor/job/extension-bridge/ws/badges/npm.svg
-[npm-dependencies-url]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor/job/extension-bridge/ws/dependencies.txt
-[npm-dependencies-image]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor/job/extension-bridge/ws/badges/dependencies.svg
+[npm-image]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor-Frontend/job/extension-bridge/ws/badges/npm.svg
+[npm-dependencies-url]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor-Frontend/job/extension-bridge/ws/dependencies.txt
+[npm-dependencies-image]: https://dtm-builder.ut1.mcps.adobe.net/view/Reactor-Frontend/job/extension-bridge/ws/badges/dependencies.svg

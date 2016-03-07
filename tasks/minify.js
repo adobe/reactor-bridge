@@ -2,7 +2,7 @@
 
 var uglify = require('gulp-uglify');
 var path = require('path');
-var rename = require('gulp-rename')
+var rename = require('gulp-rename');
 
 module.exports = function(gulp) {
   gulp.task('extensionBridge:minify', ['extensionBridge:build'], function() {

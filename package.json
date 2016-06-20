@@ -27,5 +27,9 @@
     "json-loader": "^0.5.4",
     "through2": "^2.0.1",
     "webpack-stream": "^3.1.0"
+  },
+  "devDependencies": {
+    "lodash.clonedeep": "^4.3.2",
+    "lodash.isequal": "^4.2.0"
   }
 }

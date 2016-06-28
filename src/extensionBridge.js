@@ -27,6 +27,23 @@ module.exports = function(iframe) {
   };
   iframe.destroyExtensionBridge = destroyExtensionBridge;
 
+
+  // generic getter/setter to trigger internal updates when configuration changes
+  // var configurationItemGetterSetter = {
+  //   _configurationItem: {},
+  //   get: function() {
+  //     console.log(this);
+  //     return this._configurationItem;
+  //   },
+  //   set: function(configurationItem) {
+  //     debugger;
+  //     this._configurationItem = configurationItem;
+  //
+  //     // if this is iframe.bridge.configuration
+  //     // applyBridgeGettersSetters();
+  //   }
+  // };
+
   iframe.bridge = {
     api: {
       init: channelSenders.init,
@@ -38,18 +55,56 @@ module.exports = function(iframe) {
       openDataElementSelector: null,
       onInitialRenderComplete: function() {}
     },
-    configuration: {
+
+    _currentConfiguration: {
       src: '',
       settings: {},
       propertySettings: {},
       schema: {},
       extensionConfigurations: [{}]
+    },
+    get configuration() {
+      return this._currentConfiguration;
+    },
+    set configuration(newConfiguration) {
+      this._currentConfiguration = newConfiguration;
+    },
+    setConfigurationProperty: function(name, value) {
+
     }
   }
+
+//   var _currentConfiguration = {
+//     src: '',
+//     settings: {},
+//     propertySettings: {},
+//     schema: {},
+//     extensionConfigurations: [{}]
+//   };
+//   Object.defineProperty(iframe.bridge,
+//     'configuration', {
+//       get() {
+// console.log('get');
+//         return _currentConfiguration;
+//       },
+//       set(newConfiguration) {
+// console.log('set', newConfiguration);
+//         _currentConfiguration = newConfiguration;
+//       }
+//     });
+
+  // iframe.bridge.configuration = configurationItemGetterSetter;
+  // iframe.bridge.configuration.src = configurationItemGetterSetter;
+  // iframe.bridge.configuration.settings = configurationItemGetterSetter;
+  // iframe.bridge.configuration.propertySettings = configurationItemGetterSetter;
+  // iframe.bridge.configuration.schema = configurationItemGetterSetter;
+  // iframe.bridge.configuration.extensionConfigurations = configurationItemGetterSetter;
 
   var lastConfiguration = cloneDeep(iframe.bridge.configuration);
 
   var validateConfigurationAndUpdateIframe = function() {
+    debugger;
+
     var configurationIsValid = configurationItemsAreValid();
     var configurationHasChanged = !isEqual(lastConfiguration, iframe.bridge.configuration);
 
@@ -80,22 +135,54 @@ module.exports = function(iframe) {
     return true;
   }
 
-  // generic getter/setter to trigger internal updates when configuration changes
-  var configurationItemGetterSetter = {
-    _configurationItem: {},
-    get () { return this._configurationItem; },
-    set (configurationItem) {
-      this._configurationItem = configurationItem;
-      validateConfigurationAndUpdateIframe();
-    }
-  };
-
-  iframe.bridge.configurations = configurationItemGetterSetter;
-  iframe.bridge.configuration.src = configurationItemGetterSetter;
-  iframe.bridge.configuration.settings = configurationItemGetterSetter;
-  iframe.bridge.configuration.propertySettings = configurationItemGetterSetter;
-  iframe.bridge.configuration.schema = configurationItemGetterSetter;
-  iframe.bridge.configuration.extensionConfigurations = configurationItemGetterSetter;
+  // Object.defineProperties(iframe.bridge, {
+  //   'configuration': {
+  //     set: function (value) {
+  //       console.log('iframe.bridge.configuration set to ', value);
+  //       this.configuration = value;
+  //       validateConfigurationAndUpdateIframe();
+  //       applyBridgeGettersSetters();
+  //     }
+  //   }
+  // });
+  // var applyBridgeGettersSetters = function() {
+  //   console.log(iframe.bridge.configuration);
+  //   if(iframe.bridge.configuration) {
+  //     Object.defineProperties(iframe.bridge.configuration, {
+  //       'src': {
+  //         set: function (value) {
+  //           this.src = value;
+  //           validateConfigurationAndUpdateIframe();
+  //         }
+  //       },
+  //       'settings': {
+  //         set: function (value) {
+  //           this.settings = value;
+  //           validateConfigurationAndUpdateIframe();
+  //         }
+  //       },
+  //       'propertySettings': {
+  //         set: function (value) {
+  //           this.propertySettings = value;
+  //           validateConfigurationAndUpdateIframe();
+  //         }
+  //       },
+  //       'schema': {
+  //         set: function (value) {
+  //           this.schema = value;
+  //           validateConfigurationAndUpdateIframe();
+  //         }
+  //       },
+  //       'extensionConfigurations': {
+  //         set: function (value) {
+  //           this.extensionConfigurations = value;
+  //           validateConfigurationAndUpdateIframe();
+  //         }
+  //       }
+  //     });
+  //   }
+  // }
+  // applyBridgeGettersSetters();
 
   var renderCompleteState = createRenderCompleteState(iframe.bridge.onInitialRenderComplete);
 

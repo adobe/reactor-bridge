@@ -10,12 +10,19 @@ var isEqual = require('lodash.isEqual');
 
 module.exports = function(iframe) {
   if (iframe.bridge) { return iframe; }
+  var channel;
 
-  var channel = Channel.build({
-    window: iframe.contentWindow,
-    origin: '*',
-    scope: 'extensionBridge'
-  });
+  function buildChannel() {
+    console.log('buildChannel', iframe);
+    channel = Channel.build({
+      iframe: iframe,
+      origin: '*',
+      scope: 'extensionBridge',
+      debugOutput: true,
+      reconnect: true
+    });
+  }
+  buildChannel();
   var channelSenders = getChannelSenders(channel);
 
   var destroyExtensionBridge = function() {
@@ -26,23 +33,6 @@ module.exports = function(iframe) {
     channel.destroy();
   };
   iframe.destroyExtensionBridge = destroyExtensionBridge;
-
-
-  // generic getter/setter to trigger internal updates when configuration changes
-  // var configurationItemGetterSetter = {
-  //   _configurationItem: {},
-  //   get: function() {
-  //     console.log(this);
-  //     return this._configurationItem;
-  //   },
-  //   set: function(configurationItem) {
-  //     debugger;
-  //     this._configurationItem = configurationItem;
-  //
-  //     // if this is iframe.bridge.configuration
-  //     // applyBridgeGettersSetters();
-  //   }
-  // };
 
   iframe.bridge = {
     api: {
@@ -56,75 +46,60 @@ module.exports = function(iframe) {
       onInitialRenderComplete: function() {}
     },
 
-    _currentConfiguration: {
-      src: '',
-      settings: {},
-      propertySettings: {},
-      schema: {},
-      extensionConfigurations: [{}]
-    },
+    _currentConfiguration: getNewConfiguration(),
     get configuration() {
       return this._currentConfiguration;
     },
     set configuration(newConfiguration) {
-      this._currentConfiguration = newConfiguration;
-    },
-    setConfigurationProperty: function(name, value) {
-
+      this._currentConfiguration = getNewConfiguration(newConfiguration);
     }
   }
 
-//   var _currentConfiguration = {
-//     src: '',
-//     settings: {},
-//     propertySettings: {},
-//     schema: {},
-//     extensionConfigurations: [{}]
-//   };
-//   Object.defineProperty(iframe.bridge,
-//     'configuration', {
-//       get() {
-// console.log('get');
-//         return _currentConfiguration;
-//       },
-//       set(newConfiguration) {
-// console.log('set', newConfiguration);
-//         _currentConfiguration = newConfiguration;
-//       }
-//     });
+  function getNewConfiguration(newConfiguration) {
+    var _src = newConfiguration && newConfiguration.src || '';
+    var _settings = newConfiguration && newConfiguration.settings || {};
+    var _propertySettings = newConfiguration && newConfiguration.propertySettings || {};
+    var _schema = newConfiguration && newConfiguration.schema || {};
+    var _extensionConfigurations = newConfiguration && newConfiguration.extensionConfigurations || [{}];
 
-  // iframe.bridge.configuration = configurationItemGetterSetter;
-  // iframe.bridge.configuration.src = configurationItemGetterSetter;
-  // iframe.bridge.configuration.settings = configurationItemGetterSetter;
-  // iframe.bridge.configuration.propertySettings = configurationItemGetterSetter;
-  // iframe.bridge.configuration.schema = configurationItemGetterSetter;
-  // iframe.bridge.configuration.extensionConfigurations = configurationItemGetterSetter;
+    if(newConfiguration) { validateConfigurationAndUpdateIframe(); }
+
+    return {
+      get src() { return _src },
+      set src(newValue) { _src = newValue; validateConfigurationAndUpdateIframe(); },
+      get settings() { return _settings; },
+      set settings(newValue) { _settings = newValue; validateConfigurationAndUpdateIframe(); },
+      get propertySettings() { return _propertySettings; },
+      set propertySettings(newValue) { _propertySettings = newValue; validateConfigurationAndUpdateIframe(); },
+      get schema() { return _schema; },
+      set schema(newValue) { _schema = newValue; validateConfigurationAndUpdateIframe(); },
+      get extensionConfigurations() { return _extensionConfigurations; },
+      set extensionConfigurations(newValue) { _extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); }
+    };
+  };
 
   var lastConfiguration = cloneDeep(iframe.bridge.configuration);
-
-  var validateConfigurationAndUpdateIframe = function() {
-    debugger;
-
+  function validateConfigurationAndUpdateIframe() {
+    var configurationHasChanged = !isEqual(lastConfiguration, cloneDeep(iframe.bridge.configuration));
+    if(configurationHasChanged) {
+      lastConfiguration = cloneDeep(iframe.bridge.configuration);
+    }
     var configurationIsValid = configurationItemsAreValid();
-    var configurationHasChanged = !isEqual(lastConfiguration, iframe.bridge.configuration);
 
     if(configurationHasChanged && configurationIsValid) {
       var configuration = iframe.bridge.configuration;
       if(iframe.src !== configuration.src) {
         iframe.src = configuration.src;
+        // debugger;
+        // channel.destroy();
+        // buildChannel();
         attachReadyFunctions();
       }
 
-      iframe.bridge.init({
-        settings: configuration.settings,
-        propertySettings: configuration.propertySettings,
-        schema: configuration.schema,
-        extensionConfigurations: configuration.extensionConfigurations
-      });
+      debounceInit();
     }
   }
-
-  var configurationItemsAreValid = function() {
+  function configurationItemsAreValid() {
     var keys = Object.keys(iframe.bridge.configuration);
     keys.forEach(function(key, index) {
       if (!iframe.bridge.configuration[key]) {
@@ -135,90 +110,53 @@ module.exports = function(iframe) {
     return true;
   }
 
-  // Object.defineProperties(iframe.bridge, {
-  //   'configuration': {
-  //     set: function (value) {
-  //       console.log('iframe.bridge.configuration set to ', value);
-  //       this.configuration = value;
-  //       validateConfigurationAndUpdateIframe();
-  //       applyBridgeGettersSetters();
-  //     }
-  //   }
-  // });
-  // var applyBridgeGettersSetters = function() {
-  //   console.log(iframe.bridge.configuration);
-  //   if(iframe.bridge.configuration) {
-  //     Object.defineProperties(iframe.bridge.configuration, {
-  //       'src': {
-  //         set: function (value) {
-  //           this.src = value;
-  //           validateConfigurationAndUpdateIframe();
-  //         }
-  //       },
-  //       'settings': {
-  //         set: function (value) {
-  //           this.settings = value;
-  //           validateConfigurationAndUpdateIframe();
-  //         }
-  //       },
-  //       'propertySettings': {
-  //         set: function (value) {
-  //           this.propertySettings = value;
-  //           validateConfigurationAndUpdateIframe();
-  //         }
-  //       },
-  //       'schema': {
-  //         set: function (value) {
-  //           this.schema = value;
-  //           validateConfigurationAndUpdateIframe();
-  //         }
-  //       },
-  //       'extensionConfigurations': {
-  //         set: function (value) {
-  //           this.extensionConfigurations = value;
-  //           validateConfigurationAndUpdateIframe();
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-  // applyBridgeGettersSetters();
-
-  var renderCompleteState = createRenderCompleteState(iframe.bridge.onInitialRenderComplete);
-
+  var renderCompleteState = createRenderCompleteState(function (){
+    debounceInit();
+    iframe.bridge.api.onInitialRenderComplete.apply(this, arguments);
+  });
 
   attachChannelReceivers(channel, {
+    domReadyCallback: renderCompleteState.markDomReady,
     openCodeEditor: function() {
-      if (iframe.bridge.openCodeEditor) {
-        iframe.bridge.openCodeEditor.apply(null, arguments);
+      if (iframe.bridge.api.openCodeEditor) {
+        iframe.bridge.api.openCodeEditor.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.openCodeEditor');
+        console.error('You must define iframe.bridge.api.openCodeEditor');
       }
     },
     openRegexTester: function() {
-      if (iframe.bridge.openRegexTester) {
-        iframe.bridge.openRegexTester.apply(null, arguments);
+      if (iframe.bridge.api.openRegexTester) {
+        iframe.bridge.api.openRegexTester.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.openRegexTester');
+        console.error('You must define iframe.bridge.api.openRegexTester');
       }
     },
     openDataElementSelector: function() {
-      if (iframe.bridge.openDataElementSelector) {
-        iframe.bridge.openDataElementSelector.apply(null, arguments);
+      if (iframe.bridge.api.openDataElementSelector) {
+        iframe.bridge.api.openDataElementSelector.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.openDataElementSelector');
+        console.error('You must define iframe.bridge.api.openDataElementSelector');
       }
     }
   });
 
-  var attachReadyFunctions = function() {
-    attachChannelReceivers(channel, {
-      domReadyCallback: renderCompleteState.markDomReady
-    });
+  function attachReadyFunctions() {
     frameboyant.addIframe(iframe, {
       stylesAppliedCallback: renderCompleteState.markStylesReady
     });
   }
+
+  function debounceInit() {
+    renderCompleteState.callHandlerIfComplete(function() {
+      var configuration = iframe.bridge.configuration;
+      iframe.bridge.api.init({
+        settings: configuration.settings,
+        propertySettings: configuration.propertySettings,
+        schema: configuration.schema,
+        extensionConfigurations: configuration.extensionConfigurations
+      });
+    });
+  };
 
   iframeResizer({
     checkOrigin: false

@@ -13,7 +13,8 @@ var registeredOptions = {};
 var channel = Channel.build({
   window: parent,
   origin: '*',
-  scope: 'extensionBridge'
+  scope: 'extensionBridge',
+  debugOutput: true
 });
 
 document.addEventListener("DOMContentLoaded", function(event) {

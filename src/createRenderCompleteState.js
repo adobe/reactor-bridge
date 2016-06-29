@@ -4,20 +4,26 @@ module.exports = function(onInitialRenderComplete) {
   var domReady = false;
   var stylesReady = false;
 
-  var callHandlerIfComplete = function() {
-    if (domReady && stylesReady && onInitialRenderComplete) {
-      onInitialRenderComplete();
+  var callHandlerIfComplete = function(handler) {
+    if (domReady && stylesReady && handler) {
+      handler();
     }
   };
 
+  var callOnInitalRenderComplete = function() {
+    callHandlerIfComplete(onInitialRenderComplete);
+  }
+
   return {
+    callHandlerIfComplete: callHandlerIfComplete,
     markDomReady: function() {
+      console.log('domReady');
       domReady = true;
-      callHandlerIfComplete();
+      callOnInitalRenderComplete();
     },
     markStylesReady: function() {
       stylesReady = true;
-      callHandlerIfComplete();
+      callOnInitalRenderComplete();
     }
   };
 };

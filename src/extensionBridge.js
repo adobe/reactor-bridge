@@ -1,7 +1,7 @@
 'use strict';
 var getChannelSenders = require('./getChannelSenders');
 var attachChannelReceivers = require('./attachChannelReceivers');
-var Channel = require('jschannel');
+var Channel = require('@reactor/jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
 var createRenderCompleteState = require('./createRenderCompleteState');

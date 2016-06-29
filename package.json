@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "lodash.clonedeep": "^4.3.2",
-    "lodash.isequal": "^4.2.0"
+    "lodash.isequal": "^4.2.0",
+    "@reactor/jschannel": "1.0.0"
   }
 }

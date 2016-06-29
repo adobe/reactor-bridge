@@ -1,4 +1,4 @@
-var Channel = require('jschannel');
+var Channel = require('@reactor/jschannel');
 var frameboyant = require('@reactor/frameboyant/frameboyant.contentWindow');
 var getChannelSenders = require('./getChannelSenders');
 var attachChannelReceivers = require('./attachChannelReceivers');

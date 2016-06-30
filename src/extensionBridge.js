@@ -5,8 +5,8 @@ var Channel = require('@reactor/jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
 var createRenderCompleteState = require('./createRenderCompleteState');
-var cloneDeep = require('lodash.cloneDeep');
-var isEqual = require('lodash.isEqual');
+var cloneDeep = require('lodash.clonedeep');
+var isEqual = require('lodash.isequal');
 
 module.exports = function(iframe) {
   if (iframe.bridge) { return iframe; }
@@ -115,7 +115,7 @@ module.exports = function(iframe) {
 
   attachChannelReceivers(channel, {
     domReadyCallback: renderCompleteState.markDomReady,
-    resetIframeWindow: renderCompleteState.reset, 
+    resetIframeWindow: renderCompleteState.reset,
     openCodeEditor: function() {
       if (iframe.bridge.api.openCodeEditor) {
         iframe.bridge.api.openCodeEditor.apply(null, arguments);

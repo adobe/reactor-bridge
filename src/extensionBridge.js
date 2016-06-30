@@ -10,17 +10,14 @@ var isEqual = require('lodash.isequal');
 
 module.exports = function(iframe) {
   if (iframe.bridge) { return iframe; }
-  var channel;
 
-  function buildChannel() {
-    channel = Channel.build({
-      iframe: iframe,
-      origin: '*',
-      scope: 'extensionBridge',
-      reconnect: true
-    });
-  }
-  buildChannel();
+  var channel = Channel.build({
+    iframe: iframe,
+    origin: '*',
+    scope: 'extensionBridge',
+    reconnect: true
+  });
+
   var channelSenders = getChannelSenders(channel);
 
   var destroyExtensionBridge = function() {
@@ -88,9 +85,6 @@ module.exports = function(iframe) {
       var configuration = iframe.bridge.configuration;
       if(iframe.src !== configuration.src) {
         iframe.src = configuration.src;
-        // debugger;
-        // channel.destroy();
-        // buildChannel();
         attachReadyFunctions();
       }
 

@@ -100,8 +100,11 @@ module.exports = function(iframe) {
   function configurationItemsAreValid() {
     var keys = Object.keys(iframe.bridge.configuration);
     keys.forEach(function(key, index) {
-      if (!iframe.bridge.configuration[key]) {
-        console.error('You must define iframe.configuration.' + key);
+      // src is valid as an empty string so we have to check differently
+      // for it than for the other properties
+      if ((key === 'src' && typeof iframe.bridge.configuration[key] !== 'string')
+        || (key !== 'src' && !iframe.bridge.configuration[key])) {
+        console.warn('You must define iframe.configuration.' + key);
         return false;
       }
     });
@@ -120,21 +123,21 @@ module.exports = function(iframe) {
       if (iframe.bridge.api.openCodeEditor) {
         iframe.bridge.api.openCodeEditor.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.api.openCodeEditor');
+        console.warn('You must define iframe.bridge.api.openCodeEditor');
       }
     },
     openRegexTester: function() {
       if (iframe.bridge.api.openRegexTester) {
         iframe.bridge.api.openRegexTester.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.api.openRegexTester');
+        console.warn('You must define iframe.bridge.api.openRegexTester');
       }
     },
     openDataElementSelector: function() {
       if (iframe.bridge.api.openDataElementSelector) {
         iframe.bridge.api.openDataElementSelector.apply(null, arguments);
       } else {
-        console.error('You must define iframe.bridge.api.openDataElementSelector');
+        console.warn('You must define iframe.bridge.api.openDataElementSelector');
       }
     }
   });

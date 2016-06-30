@@ -16,8 +16,11 @@ module.exports = function(onInitialRenderComplete) {
 
   return {
     callHandlerIfComplete: callHandlerIfComplete,
+    reset: function() {
+      domReady = false;
+      stylesReady = false;
+    },
     markDomReady: function() {
-      console.log('domReady');
       domReady = true;
       callOnInitalRenderComplete();
     },

@@ -13,12 +13,10 @@ module.exports = function(iframe) {
   var channel;
 
   function buildChannel() {
-    console.log('buildChannel', iframe);
     channel = Channel.build({
       iframe: iframe,
       origin: '*',
       scope: 'extensionBridge',
-      debugOutput: true,
       reconnect: true
     });
   }
@@ -117,6 +115,7 @@ module.exports = function(iframe) {
 
   attachChannelReceivers(channel, {
     domReadyCallback: renderCompleteState.markDomReady,
+    resetIframeWindow: renderCompleteState.reset, 
     openCodeEditor: function() {
       if (iframe.bridge.api.openCodeEditor) {
         iframe.bridge.api.openCodeEditor.apply(null, arguments);

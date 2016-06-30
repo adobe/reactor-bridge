@@ -1,6 +1,6 @@
 {
   "name": "@reactor/extension-support-bridge",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Gulp tasks used by the reactor project.",
   "author": {
     "name": "DTM",
@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "dependencies": {
-    "@reactor/frameboyant": "^2.1.0",
+    "@reactor/frameboyant": "git+https://git.corp.adobe.com/reactor/frameboyant.git#jschannel-upgrade",
     "event-stream": "^3.3.2",
     "globby": "^4.0.0",
     "gulp": "^3.9.1",
@@ -31,6 +31,6 @@
   "devDependencies": {
     "lodash.clonedeep": "^4.3.2",
     "lodash.isequal": "^4.2.0",
-    "@reactor/jschannel": "1.0.0"
+    "@reactor/jschannel": "^1.0.0"
   }
 }

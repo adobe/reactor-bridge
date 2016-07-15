@@ -3,9 +3,10 @@
 module.exports = function(onInitialRenderComplete) {
   var domReady = false;
   var stylesReady = false;
+  var iframeResizerReady = false;
 
   var callHandlerIfComplete = function(handler) {
-    if (domReady && stylesReady && handler) {
+    if (domReady && stylesReady && iframeResizerReady && handler) {
       handler();
     }
   };
@@ -19,6 +20,7 @@ module.exports = function(onInitialRenderComplete) {
     reset: function() {
       domReady = false;
       stylesReady = false;
+      iframeResizerReady = false;
     },
     markDomReady: function() {
       domReady = true;
@@ -27,6 +29,12 @@ module.exports = function(onInitialRenderComplete) {
     markStylesReady: function() {
       stylesReady = true;
       callOnInitalRenderComplete();
+    },
+    markIframeResizerReady: function(){
+      if (!iframeResizerReady) {
+        iframeResizerReady = true;
+        callOnInitalRenderComplete();
+      }
     }
   };
 };

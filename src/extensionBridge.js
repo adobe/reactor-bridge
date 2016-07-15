@@ -38,7 +38,8 @@ module.exports = function(iframe) {
       openCodeEditor: null,
       openRegexTester: null,
       openDataElementSelector: null,
-      onInitialRenderComplete: function() {}
+      onInitialRenderComplete: function() {},
+      onIframeWindowReset: function() {}
     },
 
     _currentConfiguration: getNewConfiguration(),
@@ -112,7 +113,10 @@ module.exports = function(iframe) {
 
   attachChannelReceivers(channel, {
     domReadyCallback: renderCompleteState.markDomReady,
-    resetIframeWindow: renderCompleteState.reset,
+    resetIframeWindow: function() {
+      iframe.bridge.api.onIframeWindowReset();
+      renderCompleteState.reset()
+    },
     openCodeEditor: function() {
       if (iframe.bridge.api.openCodeEditor) {
         iframe.bridge.api.openCodeEditor.apply(null, arguments);
@@ -155,7 +159,9 @@ module.exports = function(iframe) {
   };
 
   iframeResizer({
-    checkOrigin: false
+    checkOrigin: false,
+    resizedCallback: renderCompleteState.markIframeResizerReady,
+    log:true
   }, iframe);
 
   return iframe;

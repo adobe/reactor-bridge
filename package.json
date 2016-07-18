@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "dependencies": {
-    "@reactor/frameboyant": "git+https://git.corp.adobe.com/reactor/frameboyant.git#jschannel-upgrade",
+    "@reactor/frameboyant": "^3.0.0",
     "event-stream": "^3.3.2",
     "globby": "^4.0.0",
     "gulp": "^3.9.1",

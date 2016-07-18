@@ -1,6 +1,6 @@
 {
   "name": "@reactor/extension-support-bridge",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Gulp tasks used by the reactor project.",
   "author": {
     "name": "DTM",
@@ -25,12 +25,12 @@
     "iframe-resizer": "git+https://github.com/jhicken/iframe-resizer.git",
     "js-beautify": "^1.6.2",
     "json-loader": "^0.5.4",
+    "lodash.clonedeep": "^4.3.2",
+    "lodash.isequal": "^4.2.0",
     "through2": "^2.0.1",
     "webpack-stream": "^3.1.0"
   },
   "devDependencies": {
-    "lodash.clonedeep": "^4.3.2",
-    "lodash.isequal": "^4.2.0",
     "@reactor/jschannel": "^1.0.0"
   }
 }

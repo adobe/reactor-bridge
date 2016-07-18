@@ -1,12 +1,9 @@
-var Channel = require('jschannel');
-var frameboyant = require('@reactor/frameboyant/frameboyant.contentWindow');
+var Channel = require('@reactor/jschannel');
+var frameboyantBuilder = require('@reactor/frameboyant/frameboyant.contentWindow');
 var getChannelSenders = require('./getChannelSenders');
 var attachChannelReceivers = require('./attachChannelReceivers');
 var adaptFrameboyantForCoralUI = require('./adaptFrameboyantForCoralUI');
 var adaptFrameboyantForIframeResizer = require('./adaptFrameboyantForIframeResizer');
-
-adaptFrameboyantForCoralUI(frameboyant);
-adaptFrameboyantForIframeResizer(frameboyant);
 
 var registeredOptions = {};
 
@@ -15,6 +12,21 @@ var channel = Channel.build({
   origin: '*',
   scope: 'extensionBridge'
 });
+
+//reset
+channel.notify({
+  method: 'resetWindow',
+  error: function(name, message) {
+    console.error('An error occurred while triggering resetWindow.', name, message);
+  }
+});
+
+var frameboyant = frameboyantBuilder();
+
+adaptFrameboyantForCoralUI(frameboyant);
+adaptFrameboyantForIframeResizer(frameboyant);
+
+
 
 document.addEventListener("DOMContentLoaded", function(event) {
   channel.notify({

@@ -3,21 +3,38 @@
 module.exports = function(onInitialRenderComplete) {
   var domReady = false;
   var stylesReady = false;
+  var iframeResizerReady = false;
 
-  var callHandlerIfComplete = function() {
-    if (domReady && stylesReady && onInitialRenderComplete) {
-      onInitialRenderComplete();
+  var callHandlerIfComplete = function(handler) {
+    if (domReady && stylesReady && iframeResizerReady && handler) {
+      handler();
     }
   };
 
+  var callOnInitalRenderComplete = function() {
+    callHandlerIfComplete(onInitialRenderComplete);
+  }
+
   return {
+    callHandlerIfComplete: callHandlerIfComplete,
+    reset: function() {
+      domReady = false;
+      stylesReady = false;
+      iframeResizerReady = false;
+    },
     markDomReady: function() {
       domReady = true;
-      callHandlerIfComplete();
+      callOnInitalRenderComplete();
     },
     markStylesReady: function() {
       stylesReady = true;
-      callHandlerIfComplete();
+      callOnInitalRenderComplete();
+    },
+    markIframeResizerReady: function(){
+      if (!iframeResizerReady) {
+        iframeResizerReady = true;
+        callOnInitalRenderComplete();
+      }
     }
   };
 };

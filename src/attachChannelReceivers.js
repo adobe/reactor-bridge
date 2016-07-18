@@ -3,6 +3,10 @@ module.exports = function(channel, options) {
     options.domReadyCallback();
   });
 
+  channel.bind('resetWindow', function() {
+    options.resetIframeWindow();
+  });
+
   channel.bind('openCodeEditor', function(trans, params) {
     options.openCodeEditor(params, trans.complete);
     trans.delayReturn(true);

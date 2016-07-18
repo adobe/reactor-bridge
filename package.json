@@ -1,6 +1,6 @@
 {
   "name": "@reactor/extension-support-bridge",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Gulp tasks used by the reactor project.",
   "author": {
     "name": "DTM",
@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "dependencies": {
-    "@reactor/frameboyant": "^2.1.0",
+    "@reactor/frameboyant": "^3.0.0",
     "event-stream": "^3.3.2",
     "globby": "^4.0.0",
     "gulp": "^3.9.1",
@@ -22,10 +22,15 @@
     "gulp-rename": "^1.2.2",
     "gulp-ssh": "^0.5.5",
     "gulp-uglify": "^1.5.2",
-    "iframe-resizer": "^3.5.0",
+    "iframe-resizer": "git+https://github.com/jhicken/iframe-resizer.git",
     "js-beautify": "^1.6.2",
     "json-loader": "^0.5.4",
     "through2": "^2.0.1",
     "webpack-stream": "^3.1.0"
+  },
+  "devDependencies": {
+    "lodash.clonedeep": "^4.3.2",
+    "lodash.isequal": "^4.2.0",
+    "@reactor/jschannel": "^1.0.0"
   }
 }

@@ -160,8 +160,7 @@ module.exports = function(iframe) {
 
   iframeResizer({
     checkOrigin: false,
-    resizedCallback: renderCompleteState.markIframeResizerReady,
-    log:true
+    resizedCallback: renderCompleteState.markIframeResizerReady
   }, iframe);
 
   return iframe;

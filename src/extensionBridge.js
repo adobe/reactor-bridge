@@ -18,6 +18,8 @@ module.exports = function(iframe) {
     reconnect: true
   });
 
+  var bridgeConfiguration;
+
   var channelSenders = getChannelSenders(channel);
 
   var destroyExtensionBridge = function() {
@@ -52,40 +54,47 @@ module.exports = function(iframe) {
   }
 
   function getNewConfiguration(newConfiguration) {
-    var _src = newConfiguration && newConfiguration.src || '';
-    var _settings = newConfiguration && newConfiguration.settings || {};
-    var _propertySettings = newConfiguration && newConfiguration.propertySettings || {};
-    var _schema = newConfiguration && newConfiguration.schema || {};
-    var _extensionConfigurations = newConfiguration && newConfiguration.extensionConfigurations || [{}];
+    bridgeConfiguration = {
+      src: newConfiguration && newConfiguration.src || '',
+      settings: newConfiguration && newConfiguration.settings || {},
+      propertySettings: newConfiguration && newConfiguration.propertySettings || {},
+      schema: newConfiguration && newConfiguration.schema || {},
+      extensionConfigurations: newConfiguration && newConfiguration.extensionConfigurations || [{}]
+    };
 
-    if(newConfiguration) { validateConfigurationAndUpdateIframe(); }
+    if(newConfiguration) { validateConfigurationAndUpdateIframe(bridgeConfiguration); }
 
     return {
-      get src() { return _src },
-      set src(newValue) { _src = newValue; validateConfigurationAndUpdateIframe(); },
-      get settings() { return _settings; },
-      set settings(newValue) { _settings = newValue; validateConfigurationAndUpdateIframe(); },
-      get propertySettings() { return _propertySettings; },
-      set propertySettings(newValue) { _propertySettings = newValue; validateConfigurationAndUpdateIframe(); },
-      get schema() { return _schema; },
-      set schema(newValue) { _schema = newValue; validateConfigurationAndUpdateIframe(); },
-      get extensionConfigurations() { return _extensionConfigurations; },
-      set extensionConfigurations(newValue) { _extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); }
+      get src() { return bridgeConfiguration.src },
+      set src(newValue) { bridgeConfiguration.src = newValue; validateConfigurationAndUpdateIframe(); },
+      get settings() { return bridgeConfiguration.settings; },
+      set settings(newValue) { bridgeConfiguration.settings = newValue; validateConfigurationAndUpdateIframe(); },
+      get propertySettings() { return bridgeConfiguration.propertySettings; },
+      set propertySettings(newValue) { bridgeConfiguration.propertySettings = newValue; validateConfigurationAndUpdateIframe(); },
+      get schema() { return bridgeConfiguration.schema; },
+      set schema(newValue) { bridgeConfiguration.schema = newValue; validateConfigurationAndUpdateIframe(); },
+      get extensionConfigurations() { return bridgeConfiguration.extensionConfigurations; },
+      set extensionConfigurations(newValue) { bridgeConfiguration.extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); }
     };
   };
 
-  var lastConfiguration = cloneDeep(iframe.bridge.configuration);
+  function absolutePath(href) {
+      var link = document.createElement("a");
+      link.href = href;
+      return (link.protocol+"//"+link.host+link.pathname+link.search+link.hash);
+  }
+
+  // var lastConfiguration = cloneDeep(iframe.bridge.configuration);
   function validateConfigurationAndUpdateIframe() {
-    var configurationHasChanged = !isEqual(lastConfiguration, cloneDeep(iframe.bridge.configuration));
-    if(configurationHasChanged) {
-      lastConfiguration = cloneDeep(iframe.bridge.configuration);
-    }
+    // var configurationHasChanged = !isEqual(lastConfiguration, cloneDeep(iframe.bridge.configuration));
+    // if(configurationHasChanged) {
+    //   lastConfiguration = cloneDeep(iframe.bridge.configuration);
+    // }
     var configurationIsValid = configurationItemsAreValid();
 
-    if(configurationHasChanged && configurationIsValid) {
-      var configuration = iframe.bridge.configuration;
-      if(iframe.src !== configuration.src) {
-        iframe.src = configuration.src;
+    if(configurationIsValid) {
+      if(iframe.src !== absolutePath(bridgeConfiguration.src)) {
+        iframe.src = bridgeConfiguration.src;
         attachReadyFunctions();
       }
 
@@ -93,12 +102,12 @@ module.exports = function(iframe) {
     }
   }
   function configurationItemsAreValid() {
-    var keys = Object.keys(iframe.bridge.configuration);
+    var keys = Object.keys(bridgeConfiguration);
     keys.forEach(function(key, index) {
       // src is valid as an empty string so we have to check differently
       // for it than for the other properties
-      if ((key === 'src' && typeof iframe.bridge.configuration[key] !== 'string')
-        || (key !== 'src' && !iframe.bridge.configuration[key])) {
+      if ((key === 'src' && typeof bridgeConfiguration[key] !== 'string')
+        || (key !== 'src' && !bridgeConfiguration[key])) {
         console.warn('You must define iframe.configuration.' + key);
         return false;
       }
@@ -148,12 +157,11 @@ module.exports = function(iframe) {
 
   function debounceInit() {
     renderCompleteState.callHandlerIfComplete(function() {
-      var configuration = iframe.bridge.configuration;
       iframe.bridge.api.init({
-        settings: configuration.settings,
-        propertySettings: configuration.propertySettings,
-        schema: configuration.schema,
-        extensionConfigurations: configuration.extensionConfigurations
+        settings: bridgeConfiguration.settings,
+        propertySettings: bridgeConfiguration.propertySettings,
+        schema: bridgeConfiguration.schema,
+        extensionConfigurations: bridgeConfiguration.extensionConfigurations
       });
     });
   };

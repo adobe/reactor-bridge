@@ -56,7 +56,7 @@ module.exports = function(iframe) {
   function getNewConfiguration(newConfiguration) {
     bridgeConfiguration = {
       src: newConfiguration && newConfiguration.src || '',
-      settings: newConfiguration && newConfiguration.settings || {},
+      settings: newConfiguration && newConfiguration.settings || null,
       propertySettings: newConfiguration && newConfiguration.propertySettings || {},
       schema: newConfiguration && newConfiguration.schema || {},
       extensionConfigurations: newConfiguration && newConfiguration.extensionConfigurations || [{}]

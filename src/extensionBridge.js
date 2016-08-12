@@ -102,8 +102,10 @@ module.exports = function(iframe) {
     }
   }
   function configurationItemsAreValid() {
-    var keys = Object.keys(bridgeConfiguration);
-    keys.forEach(function(key, index) {
+    var ignoredKeys = ['settings'];
+    var keys = Object.keys(bridgeConfiguration)
+      .filter(function(key) { return ignoredKeys.indexOf(key) === -1; });
+
       // src is valid as an empty string so we have to check differently
       // for it than for the other properties
       if ((key === 'src' && typeof bridgeConfiguration[key] !== 'string')

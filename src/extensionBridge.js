@@ -5,8 +5,6 @@ var Channel = require('@reactor/jschannel');
 var iframeResizer = require('iframe-resizer').iframeResizer;
 var frameboyant = require('@reactor/frameboyant/frameboyant');
 var createRenderCompleteState = require('./createRenderCompleteState');
-var cloneDeep = require('lodash.clonedeep');
-var isEqual = require('lodash.isequal');
 
 module.exports = function(iframe) {
   if (iframe.bridge) { return iframe; }
@@ -51,7 +49,7 @@ module.exports = function(iframe) {
     set configuration(newConfiguration) {
       this._currentConfiguration = getNewConfiguration(newConfiguration);
     }
-  }
+  };
 
   function getNewConfiguration(newConfiguration) {
     bridgeConfiguration = {
@@ -76,7 +74,7 @@ module.exports = function(iframe) {
       get extensionConfigurations() { return bridgeConfiguration.extensionConfigurations; },
       set extensionConfigurations(newValue) { bridgeConfiguration.extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); }
     };
-  };
+  }
 
   function absolutePath(href) {
       var link = document.createElement("a");
@@ -84,12 +82,7 @@ module.exports = function(iframe) {
       return (link.protocol+"//"+link.host+link.pathname+link.search+link.hash);
   }
 
-  // var lastConfiguration = cloneDeep(iframe.bridge.configuration);
   function validateConfigurationAndUpdateIframe() {
-    // var configurationHasChanged = !isEqual(lastConfiguration, cloneDeep(iframe.bridge.configuration));
-    // if(configurationHasChanged) {
-    //   lastConfiguration = cloneDeep(iframe.bridge.configuration);
-    // }
     var configurationIsValid = configurationItemsAreValid();
 
     if(configurationIsValid) {
@@ -101,11 +94,13 @@ module.exports = function(iframe) {
       debounceInit();
     }
   }
+
   function configurationItemsAreValid() {
     var ignoredKeys = ['settings'];
     var keys = Object.keys(bridgeConfiguration)
       .filter(function(key) { return ignoredKeys.indexOf(key) === -1; });
 
+    keys.forEach(function(key) {
       // src is valid as an empty string so we have to check differently
       // for it than for the other properties
       if ((key === 'src' && typeof bridgeConfiguration[key] !== 'string')
@@ -166,7 +161,7 @@ module.exports = function(iframe) {
         extensionConfigurations: bridgeConfiguration.extensionConfigurations
       });
     });
-  };
+  }
 
   iframeResizer({
     checkOrigin: false,

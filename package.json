@@ -1,6 +1,6 @@
 {
   "name": "@reactor/extension-support-bridge",
-  "version": "4.0.6",
+  "version": "4.0.7",
   "description": "Gulp tasks used by the reactor project.",
   "author": {
     "name": "DTM",

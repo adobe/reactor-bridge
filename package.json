@@ -13,24 +13,16 @@
   "publishConfig": {
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
+  "scripts": {
+    "build": "./tasks/build.js"
+  },
   "dependencies": {
     "@reactor/frameboyant": "^3.1.0",
-    "event-stream": "^3.3.2",
-    "globby": "^4.0.0",
-    "gulp": "^3.9.1",
-    "gulp-concat": "^2.6.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-ssh": "^0.5.5",
-    "gulp-uglify": "^1.5.2",
-    "iframe-resizer": "git+https://github.com/jhicken/iframe-resizer.git",
-    "js-beautify": "^1.6.2",
-    "json-loader": "^0.5.4",
-    "lodash.clonedeep": "^4.3.2",
-    "lodash.isequal": "^4.2.0",
-    "through2": "^2.0.1",
-    "webpack-stream": "^3.1.0"
+    "@reactor/jschannel": "^1.0.0",
+    "iframe-resizer": "git+https://github.com/jhicken/iframe-resizer.git"
   },
   "devDependencies": {
-    "@reactor/jschannel": "^1.0.0"
+    "json-loader": "^0.5.4",
+    "webpack": "^1.13.2"
   }
 }

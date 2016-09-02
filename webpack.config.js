@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 'use strict';
 
 var webpack = require('webpack');
@@ -9,7 +7,7 @@ var entryPaths = [
   './src/contentWindow/extensionBridge.contentWindow.js'
 ];
 
-webpack({
+module.exports = {
   entry: {
     'extensionbridge': entryPaths,
     'extensionbridge.min': entryPaths
@@ -29,6 +27,4 @@ webpack({
       }
     })
   ]
-}).run(function(err, stats) {
-  console.log(stats.toString('minimal'));
-});
+};

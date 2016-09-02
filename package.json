@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
-    "build": "./tasks/build.js"
+    "build": "webpack"
   },
   "dependencies": {
     "@reactor/frameboyant": "^3.1.0",

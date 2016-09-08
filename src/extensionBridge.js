@@ -59,7 +59,7 @@ module.exports = function(iframe) {
       schema: newConfiguration && newConfiguration.schema || {},
       extensionConfigurations: newConfiguration && newConfiguration.extensionConfigurations || [{}],
       tokens: newConfiguration && newConfiguration.tokens || {},
-      companyInfo: newConfiguration && newConfiguration.companyInfo || {}
+      company: newConfiguration && newConfiguration.company || {}
     };
 
     if(newConfiguration) { validateConfigurationAndUpdateIframe(bridgeConfiguration); }
@@ -77,8 +77,8 @@ module.exports = function(iframe) {
       set extensionConfigurations(newValue) { bridgeConfiguration.extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); },
       get tokens() { return bridgeConfiguration.tokens; },
       set tokens(newValue) { bridgeConfiguration.tokens = newValue; validateConfigurationAndUpdateIframe(); },
-      get companyInfo() { return bridgeConfiguration.companyInfo; },
-      set companyInfo(newValue) { bridgeConfiguration.companyInfo = newValue; validateConfigurationAndUpdateIframe(); }
+      get company() { return bridgeConfiguration.company; },
+      set company(newValue) { bridgeConfiguration.company = newValue; validateConfigurationAndUpdateIframe(); }
     };
   }
 
@@ -166,7 +166,7 @@ module.exports = function(iframe) {
         schema: bridgeConfiguration.schema,
         extensionConfigurations: bridgeConfiguration.extensionConfigurations,
         tokens: bridgeConfiguration.tokens,
-        companyInfo: bridgeConfiguration.companyInfo
+        company: bridgeConfiguration.company
       });
     });
   }

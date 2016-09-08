@@ -57,7 +57,9 @@ module.exports = function(iframe) {
       settings: newConfiguration && newConfiguration.settings || null,
       propertySettings: newConfiguration && newConfiguration.propertySettings || {},
       schema: newConfiguration && newConfiguration.schema || {},
-      extensionConfigurations: newConfiguration && newConfiguration.extensionConfigurations || [{}]
+      extensionConfigurations: newConfiguration && newConfiguration.extensionConfigurations || [{}],
+      tokens: newConfiguration && newConfiguration.tokens || {},
+      companyInfo: newConfiguration && newConfiguration.companyInfo || {}
     };
 
     if(newConfiguration) { validateConfigurationAndUpdateIframe(bridgeConfiguration); }
@@ -72,7 +74,11 @@ module.exports = function(iframe) {
       get schema() { return bridgeConfiguration.schema; },
       set schema(newValue) { bridgeConfiguration.schema = newValue; validateConfigurationAndUpdateIframe(); },
       get extensionConfigurations() { return bridgeConfiguration.extensionConfigurations; },
-      set extensionConfigurations(newValue) { bridgeConfiguration.extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); }
+      set extensionConfigurations(newValue) { bridgeConfiguration.extensionConfigurations = newValue; validateConfigurationAndUpdateIframe(); },
+      get tokens() { return bridgeConfiguration.tokens; },
+      set tokens(newValue) { bridgeConfiguration.tokens = newValue; validateConfigurationAndUpdateIframe(); },
+      get companyInfo() { return bridgeConfiguration.companyInfo; },
+      set companyInfo(newValue) { bridgeConfiguration.companyInfo = newValue; validateConfigurationAndUpdateIframe(); }
     };
   }
 
@@ -158,7 +164,9 @@ module.exports = function(iframe) {
         settings: bridgeConfiguration.settings,
         propertySettings: bridgeConfiguration.propertySettings,
         schema: bridgeConfiguration.schema,
-        extensionConfigurations: bridgeConfiguration.extensionConfigurations
+        extensionConfigurations: bridgeConfiguration.extensionConfigurations,
+        tokens: bridgeConfiguration.tokens,
+        companyInfo: bridgeConfiguration.companyInfo
       });
     });
   }

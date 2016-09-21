@@ -1,7 +1,7 @@
 {
   "name": "@reactor/extension-support-bridge",
   "version": "5.2.0",
-  "description": "Gulp tasks used by the reactor project.",
+  "description": "Communication API between Lens and Reactor extensions iframes.",
   "author": {
     "name": "DTM",
     "email": "DTM-Engineering@adobe.com"

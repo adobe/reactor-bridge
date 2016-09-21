@@ -21,4 +21,9 @@ module.exports = function(channel, options) {
     options.openDataElementSelector(trans.complete);
     trans.delayReturn(true);
   });
+
+  channel.bind('openCssSelector', function(trans) {
+    options.openCssSelector(trans.complete);
+    trans.delayReturn(true);
+  });
 };

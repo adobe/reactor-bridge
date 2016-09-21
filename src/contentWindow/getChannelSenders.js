@@ -19,6 +19,15 @@ module.exports = function(channel) {
         }
       });
     },
+    openCssSelector: function(callback) {
+      channel.call({
+        method: 'openCssSelector',
+        success: callback,
+        error: function(name, message) {
+          console.error('An error occurred while opening CSS selector.', name, message);
+        }
+      });
+    },
     openRegexTester: function(regex, callback) {
       channel.call({
         method: 'openRegexTester',

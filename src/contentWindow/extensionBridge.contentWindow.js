@@ -84,6 +84,7 @@ window.extensionBridge = {
   releaseFrontLock: frameboyant.releaseFrontLock,
   openCodeEditor: channelSenders.openCodeEditor,
   openDataElementSelector: channelSenders.openDataElementSelector,
+  openCssSelector: channelSenders.openCssSelector,
   openRegexTester: channelSenders.openRegexTester,
   register: function(options) {
     Object.keys(options).forEach(function(key) {

@@ -38,6 +38,7 @@ module.exports = function(iframe) {
       openCodeEditor: null,
       openRegexTester: null,
       openDataElementSelector: null,
+      openCssSelector: null,
       onInitialRenderComplete: function() {},
       onIframeWindowReset: function() {}
     },
@@ -148,6 +149,13 @@ module.exports = function(iframe) {
         iframe.bridge.api.openDataElementSelector.apply(null, arguments);
       } else {
         console.warn('You must define iframe.bridge.api.openDataElementSelector');
+      }
+    },
+    openCssSelector: function() {
+      if (iframe.bridge.api.openCssSelector) {
+        iframe.bridge.api.openCssSelector.apply(null, arguments);
+      } else {
+        console.warn('You must define iframe.bridge.api.openCssSelector');
       }
     }
   });

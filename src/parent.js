@@ -1,22 +1,17 @@
 import PenPal from 'penpal';
-import frameboyant from '@reactor/frameboyant/frameboyant';
-import { iframeResizer } from 'iframe-resizer';
+// import { iframeResizer } from 'iframe-resizer';
+import Logger from './utils/logger';
 
 const CONNECTION_TIMEOUT_DURATION = 10000;
 const RENDER_TIMEOUT_DURATION = 2000;
 
+const logger = new Logger('ExtensionBridge:Parent');
+
 let Promise = window.Promise;
-let debug = false;
 
 export const ERROR_CODES = {
   CONNECTION_TIMEOUT: 'connectionTimeout',
   RENDER_TIMEOUT: 'renderTimeout'
-};
-
-const log = message => {
-  if (debug) {
-    console.log(`[ExtensionBridge] Parent: ${message}`);
-  }
 };
 
 /**
@@ -73,6 +68,9 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     openRegexTester,
     openDataElementSelector,
     openCssSelector,
+    activateEditMode,
+    deactivateEditMode,
+    setIframeHeight,
     connectionTimeoutDuration = CONNECTION_TIMEOUT_DURATION,
     renderTimeoutDuration = RENDER_TIMEOUT_DURATION
   } = options;
@@ -84,6 +82,9 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     reject(ERROR_CODES.CONNECTION_TIMEOUT);
   }, connectionTimeoutDuration);
 
+  let resolveIframeHeightSetPromise;
+  const iframeHeightSetPromise = new Promise(resolve => resolveIframeHeightSetPromise = resolve);
+
   PenPal.connectToChild({
     url,
     appendTo: container,
@@ -92,41 +93,30 @@ export const loadIframe = options => new Promise((resolve, reject) => {
       openRegexTester,
       openDataElementSelector,
       openCssSelector,
-      // domReady: resolveDomReadyPromise
+      // domReady: resolveDomReadyPromise,
+      activateEditMode,
+      deactivateEditMode,
+      setIframeHeight(...args) {
+        resolveIframeHeightSetPromise();
+        setIframeHeight(...args);
+      }
     }
   }).then(child => {
     clearTimeout(connectionTimeoutId);
 
-    const stylesAppliedPromise = new Promise(resolve => {
-      frameboyant.addIframe(child.iframe, {
-        stylesAppliedCallback: resolve
-      });
-    });
-
-    stylesAppliedPromise.then(() => log('Styles applied.'));
-
-    const resizerReadyPromise = new Promise(resolve => {
-      iframeResizer({
-        checkOrigin: false,
-        resizedCallback: resolve
-      }, child.iframe);
-    });
-
-    resizerReadyPromise.then(() => log('Resizer ready.'));
-
     let resolveInitCompletePromise;
     const initCompletePromise = new Promise(resolve => resolveInitCompletePromise = resolve);
 
-    initCompletePromise.then(() => log('Init complete.'));
+    initCompletePromise.then(() => logger.log('Init complete.'));
 
     const api = {
       iframe: child.iframe,
       init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
+      setContentRect: child.setContentRect,
       destroy: () => {
         iframe.iFrameResizer.close();
-        frameboyant.removeIframe(child.iframe);
         child.destroy();
       }
     };
@@ -136,9 +126,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     }, renderTimeoutDuration);
 
     Promise.all([
-      // domReadyPromise,
-      stylesAppliedPromise,
-      resizerReadyPromise,
+      iframeHeightSetPromise,
       initCompletePromise,
     ]).then(() => {
       clearTimeout(renderTimeoutId);
@@ -152,7 +140,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
 export const setPromise = value => Promise = value;
 export const setDebug = value => {
   PenPal.debug = value;
-  debug = value;
+  Logger.enabled = value;
 };
 
-setDebug(true);
+// setDebug(true);

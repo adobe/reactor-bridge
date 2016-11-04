@@ -1,21 +1,17 @@
 import PenPal from 'penpal';
-import createFrameboyant from '@reactor/frameboyant/frameboyant.contentWindow';
 import Promise from 'native-promise-only-ponyfill';
-import iframeResizer from 'iframe-resizer/js/iframeResizer.contentWindow';
+import Logger from './utils/logger';
+// I think frameboyant might need to come before iframeResizer so frameboyant can set styles
+// before iframeResizer starts resizing.
+import frameboyant from './frameboyant/frameboyant.child';
+// We're using a custom build because of https://github.com/davidjbradshaw/iframe-resizer/issues/423
+// import iframeResizer from './iframeResizer/iframeResizer.contentWindow';
 
 PenPal.Promise = Promise;
 
-const frameboyant = createFrameboyant();
-
-let debug = false;
+const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};
 let parent = {};
-
-const log = message => {
-  if (debug) {
-    console.log(`[ExtensionBridge] Child: ${message}`);
-  }
-};
 
 const wrapExtensionViewMethod = methodName => (...args) => {
   if (extensionViewMethods[methodName]) {
@@ -47,19 +43,13 @@ PenPal.connectToParent({
   methods: {
     init: wrapExtensionViewMethod('init'),
     validate: wrapExtensionViewMethod('validate'),
-    getSettings: wrapExtensionViewMethod('getSettings')
+    getSettings: wrapExtensionViewMethod('getSettings'),
+    setContentRect: frameboyant.setContentRect
   }
-}).then(_parent => parent = _parent);
-
-frameboyant.stylesAppliedCallback = () => {
-  // Tell the iframe resizer that it needs to resize the iframe since it won't
-  // automatically detect that the styles have been updated via frameboyant.
-  if ('parentIFrame' in window) {
-    window.parentIFrame.size();
-  }
-
-  log('Styles applied.');
-};
+}).then(_parent => {
+  parent = _parent;
+  frameboyant.setParent(parent);
+});
 
 // document.addEventListener("DOMContentLoaded", () => parent.domReady());
 
@@ -76,13 +66,14 @@ module.exports = {
       ...methods
     };
 
-    log('Extension view methods registered.');
+    logger.log('Methods registered by extension.');
   },
   setDebug: function(value) {
     PenPal.debug = value;
-    debug = value;
+    Logger.enabled = value;
   }
 };
 
-module.exports.setDebug(true);
+// TODO: Remove for production.
+// module.exports.setDebug(true);
 

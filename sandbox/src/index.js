@@ -1,61 +1,25 @@
-import docOffset from 'document-offset';
 import { loadIframe } from '../../src/parent';
-import UIObserver from '../../src/utils/uiObserver';
 
 const noop = () => {};
 
-let child;
-let editMode = false;
-
-const uiObserver = new UIObserver(() => {
-  child.setContentRect(getIframeContentRect());
-});
-
-const getIframeContentRect = () => {
-  const contentRectBasis = editMode ? document.getElementById('iframePlaceholder') : child.iframe;
-  const { top, left } = docOffset(contentRectBasis);
-  const { width } = contentRectBasis.getBoundingClientRect();
-
-  return {
-    top,
-    left,
-    width,
-  }
-};
-
 loadIframe({
   url: '//localhost:9800/iframe.html',
-  container: document.getElementById('iframeContainer'),
+  container: document.getElementById('ruleComponent'),
   extensionInitOptions: {},
   openCodeEditor: noop,
   openRegexTester: noop,
   openDataElementSelector: noop,
   openCssSelector: noop,
+  editModeZIndex: 1001,
   activateEditMode() {
-    editMode = true;
-
-    const iframeContentRect = getIframeContentRect();
-    const ruleComponent = document.getElementById('ruleComponent');
-
-    ruleComponent.classList.add('editMode');
-    uiObserver.observe();
-
-    return iframeContentRect;
+    document.getElementById('backdrop').classList.add('editMode');
   },
   deactivateEditMode() {
-    editMode = false;
-    uiObserver.disconnect();
-    const ruleComponent = document.getElementById('ruleComponent');
-    ruleComponent.classList.remove('editMode');
-  },
-  setIframeHeight(height) {
-    const iframeContainer = document.getElementById('iframeContainer');
-    iframeContainer.style.height = height + 'px';
-
-    var iframePlaceholder = document.getElementById('iframePlaceholder');
-    iframePlaceholder.style.height = height + 'px';
+    document.getElementById('backdrop').classList.remove('editMode');
   }
-}).then(_child => child = _child);
+}).then(() => {
+  document.getElementById('ruleComponent').classList.remove('loading');
+});
 
 var animateSlide = function(element) {
   var height = 0;

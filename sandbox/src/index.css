@@ -1,39 +1,28 @@
-* {
-  box-sizing: border-box;
+body {
+  margin: 0;
+  padding: .1px; /* Prevent collapsing margins */
 }
 
-html {
-  /* Needed in order for the iframe to fill the entire document when in edit mode. */
-  position: relative;
+#backdrop {
+  display:none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .4);
+}
+
+#backdrop.editMode {
+  display: block;
 }
 
 #ruleComponent {
+  background-color: white;
+  position: relative;
   margin: 0 100px;
 }
 
-#ruleComponent.editMode #iframeContainer {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  /* Override any height auto-resizing had applied directly to the element */
-  height: auto !important;
-}
-
-#ruleComponent #iframeContainer iframe {
-  background-color: rgba(255, 0, 0, .1);
-  border: 0;
-  width: 100%;
-  height: 100%;
-}
-
-#ruleComponent #iframePlaceholder {
+#ruleComponent.loading {
   display: none;
-}
-
-#ruleComponent.editMode #iframePlaceholder {
-  display: block;
 }
 
 #animatedBox {

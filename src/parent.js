@@ -1,11 +1,12 @@
 import PenPal from 'penpal';
-// import { iframeResizer } from 'iframe-resizer';
 import Logger from './utils/logger';
+import Frameboyant from './frameboyant/frameboyant.parent';
 
 const CONNECTION_TIMEOUT_DURATION = 10000;
 const RENDER_TIMEOUT_DURATION = 2000;
 
 const logger = new Logger('ExtensionBridge:Parent');
+const noop = () => {};
 
 let Promise = window.Promise;
 
@@ -19,6 +20,8 @@ export const ERROR_CODES = {
  * @typedef {Object} IframeAPI
  * @property {HTMLIframeElement} iframe The created iframe. You may use this to add classes to the
  * iframe, etc.
+ * @property {HTMLElement} iframeContainer A container the iframe sits within. This container is
+ * needed in order for edit mode to work properly.
  * @property {Function} init Initializes the extension view.
  * @property {Function} validate Validates the extension view.
  * @property {Function} getSettings Retrieves settings from the extension view.
@@ -30,8 +33,8 @@ export const ERROR_CODES = {
  * Loads an extension iframe and connects all the necessary APIs.
  * @param {Object} options
  * @param {string} options.url The URL of the extension view to load.
- * @param {HTMLElement} container The container DOM element to which the extension iframe should
- * be added.
+ * @param {HTMLElement} options.container The container DOM element to which the extension iframe
+ * should be added.
  * @param {Object} options.extensionInitOptions The options to be passed to the initial init() call
  * on the extension view.
  * @param {Function} options.openCodeEditor The function to call when the extension view requests
@@ -46,6 +49,12 @@ export const ERROR_CODES = {
  * @param {Function} options.openCssSelector The function to call when the extension view requests
  * that the CSS selector should open. The function should return a promise that is resolved
  * with the generated CSS selector.
+ * @param {number} [options.editModeZIndex=1000] The z-index the iframe should be given when it is
+ * in edit mode.
+ * @param {Function} [options.activateEditMode] A function that will be called when edit mode
+ * is activated.
+ * @param {Function} [options.deactivateEditMode] A function that will be called when edit mode
+ * is deactivated.
  * @param {number} [options.connectionTimeoutDuration=10000] The amount of time, in milliseconds,
  * that must pass while attempting to establish communication with the iframe before rejecting
  * the returned promise with a CONNECTION_TIMEOUT error code.
@@ -68,57 +77,59 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     openRegexTester,
     openDataElementSelector,
     openCssSelector,
-    activateEditMode,
-    deactivateEditMode,
-    setIframeHeight,
+    editModeZIndex = 1000,
+    activateEditMode = noop,
+    deactivateEditMode = noop,
     connectionTimeoutDuration = CONNECTION_TIMEOUT_DURATION,
     renderTimeoutDuration = RENDER_TIMEOUT_DURATION
   } = options;
 
-  // let resolveDomReadyPromise;
-  // const domReadyPromise = new Promise(resolve => resolveDomReadyPromise = resolve);
+  const frameboyant = new Frameboyant(editModeZIndex);
+  container.appendChild(frameboyant.root);
 
   const connectionTimeoutId = setTimeout(() => {
     reject(ERROR_CODES.CONNECTION_TIMEOUT);
   }, connectionTimeoutDuration);
 
-  let resolveIframeHeightSetPromise;
-  const iframeHeightSetPromise = new Promise(resolve => resolveIframeHeightSetPromise = resolve);
+  let resolveIframeHeightSet;
+  const iframeHeightSet = new Promise(resolve => resolveIframeHeightSet = resolve);
+  iframeHeightSet.then(() => logger.log('Resize complete'));
+
+  let resolveInitComplete;
+  const initComplete = new Promise(resolve => resolveInitComplete = resolve);
+  initComplete.then(() => logger.log('Init complete.'));
 
   PenPal.connectToChild({
     url,
-    appendTo: container,
+    appendTo: frameboyant.iframeContainer,
     methods: {
       openCodeEditor,
       openRegexTester,
       openDataElementSelector,
       openCssSelector,
-      // domReady: resolveDomReadyPromise,
-      activateEditMode,
-      deactivateEditMode,
+      activateEditMode: () => {
+        activateEditMode();
+        return frameboyant.activateEditMode();
+      },
+      deactivateEditMode: () => {
+        deactivateEditMode();
+        frameboyant.deactivateEditMode();
+      },
       setIframeHeight(...args) {
-        resolveIframeHeightSetPromise();
-        setIframeHeight(...args);
+        frameboyant.setIframeHeight(...args);
+        resolveIframeHeightSet();
       }
     }
   }).then(child => {
     clearTimeout(connectionTimeoutId);
 
-    let resolveInitCompletePromise;
-    const initCompletePromise = new Promise(resolve => resolveInitCompletePromise = resolve);
-
-    initCompletePromise.then(() => logger.log('Init complete.'));
-
     const api = {
       iframe: child.iframe,
+      iframeContainer: frameboyant.container,
       init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
-      setContentRect: child.setContentRect,
-      destroy: () => {
-        iframe.iFrameResizer.close();
-        child.destroy();
-      }
+      destroy: frameboyant.destroy
     };
 
     const renderTimeoutId = setTimeout(() => {
@@ -126,14 +137,15 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     }, renderTimeoutDuration);
 
     Promise.all([
-      iframeHeightSetPromise,
-      initCompletePromise,
+      iframeHeightSet,
+      initComplete,
     ]).then(() => {
       clearTimeout(renderTimeoutId);
       resolve(api);
     });
 
-    api.init(extensionInitOptions).then(resolveInitCompletePromise);
+    frameboyant.setChild(child);
+    api.init(extensionInitOptions).then(resolveInitComplete);
   });
 });
 

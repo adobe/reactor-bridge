@@ -5,7 +5,7 @@ describe('parent', () => {
     expect(true).toBe(true);
   });
 
-  it('asdf', (done) => {
+  it('Loads an iframe', (done) => {
     loadIframe({
       url: 'http://localhost:9800/child.html',
       container: document.body,

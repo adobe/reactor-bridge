@@ -1,11 +1,7 @@
 import PenPal from 'penpal';
 import Promise from 'native-promise-only-ponyfill';
 import Logger from './utils/logger';
-// I think frameboyant might need to come before iframeResizer so frameboyant can set styles
-// before iframeResizer starts resizing.
-import frameboyant from './frameboyant/frameboyant.child';
-// We're using a custom build because of https://github.com/davidjbradshaw/iframe-resizer/issues/423
-// import iframeResizer from './iframeResizer/iframeResizer.contentWindow';
+import Frameboyant from './frameboyant/frameboyant.child';
 
 PenPal.Promise = Promise;
 
@@ -44,11 +40,11 @@ PenPal.connectToParent({
     init: wrapExtensionViewMethod('init'),
     validate: wrapExtensionViewMethod('validate'),
     getSettings: wrapExtensionViewMethod('getSettings'),
-    setContentRect: frameboyant.setContentRect
+    setContentRect: Frameboyant.setContentRect
   }
 }).then(_parent => {
   parent = _parent;
-  frameboyant.setParent(parent);
+  Frameboyant.setParent(parent);
 });
 
 // document.addEventListener("DOMContentLoaded", () => parent.domReady());
@@ -74,6 +70,5 @@ module.exports = {
   }
 };
 
-// TODO: Remove for production.
 // module.exports.setDebug(true);
 

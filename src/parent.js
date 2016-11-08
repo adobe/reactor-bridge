@@ -63,9 +63,8 @@ export const ERROR_CODES = {
  * with a RENDER_TIMEOUT error code. This duration begins after communication with the iframe
  * has been established.
  * @returns {Promise} The promise will be resolved once (1) communication with the iframe has
- * been established, (2) the iframe's DOMContentLoaded event has occurred, (3) Frameboyant's styles
- * have been applied to the iframe, (4) the iframe resizer has made its initial resize, and
- * (5) the iframe has acknowledged receiving the initial init() call. The promise will be resolved
+ * been established, (2) the iframe has been resized to its content, and (3) the iframe has
+ * acknowledged receiving the initial init() call. The promise will be resolved
  * with an {IframeAPI} object that will act as the API to use to communicate with the iframe.
  */
 export const loadIframe = options => new Promise((resolve, reject) => {

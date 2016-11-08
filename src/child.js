@@ -40,7 +40,8 @@ PenPal.connectToParent({
     init: wrapExtensionViewMethod('init'),
     validate: wrapExtensionViewMethod('validate'),
     getSettings: wrapExtensionViewMethod('getSettings'),
-    setContentRect: Frameboyant.setContentRect
+    setContentRect: Frameboyant.setContentRect,
+    exitEditMode: Frameboyant.exitEditMode
   }
 }).then(_parent => {
   parent = _parent;

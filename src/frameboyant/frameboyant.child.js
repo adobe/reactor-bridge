@@ -49,21 +49,45 @@ const STYLES = `
   }
 `;
 
-addStylesToPage(STYLES);
+let parent;
+let editMode = false;
 
 const preventEvent = event => {
   event.preventDefault();
   event.stopPropagation();
 };
 
-// We want to try to be the first to add an event listener for click events so we do it ASAP.
-// While we're establishing communication with the parent window, we'll just prevent any click
-// event. Once communication is established, we'll override onClick with a more useful handler.
-let onClick = preventEvent;
-document.addEventListener('click', event => {
-  onClick(event);
-}, true);
+const isSimulatedClickEvent = event => event.frameboyantSimulated;
 
+const createSimulatedClickEvent = () => {
+  const simulatedClickEvent = new MouseEvent('click', {
+    bubbles: true,
+    cancelable: true
+  });
+
+  simulatedClickEvent.frameboyantSimulated = true;
+
+  return simulatedClickEvent;
+};
+
+const handleClick = event => {
+  if (editMode) {
+    if (event.target === document.documentElement && !isSimulatedClickEvent(event)) {
+      exitEditMode();
+    }
+  } else {
+    // We prevent the click until edit mode has been entered and then re-trigger it. We do this
+    // because the click may be, for example, triggering a popover. The popover will possibly
+    // have a calculation to determine the best placement due to how much space is around it.
+    // We want to make sure we've already entered edit mode by the time this calculation is made
+    // so it can have the full edit mode area to consider.
+    const clickTarget = event.target;
+    preventEvent(event);
+    enterEditMode().then(() => {
+      clickTarget.dispatchEvent(createSimulatedClickEvent());
+    });
+  }
+};
 
 const setContentRect = rect => {
   const bodyStyle = document.body.style;
@@ -81,63 +105,61 @@ const clearContentRect = () => {
   logger.log('content rect cleared');
 };
 
-const setParent = once(parent => {
-  let editMode = false;
+const enterEditMode = () => {
+  if (parent && !editMode) {
+    logger.log('entering edit mode');
+    editMode = true;
+    document.body.classList.add('frameboyantTogglingEditMode');
 
+    return parent.editModeEntered().then(contentRect => {
+      setContentRect(contentRect);
+      document.body.classList.remove('frameboyantTogglingEditMode');
+    });
+  }
+};
+
+const exitEditMode = () => {
+  if (parent && editMode) {
+    logger.log('exiting edit mode');
+    editMode = false;
+    document.body.classList.add('frameboyantTogglingEditMode');
+
+    parent.editModeExited().then(() => {
+      clearContentRect();
+      document.body.classList.remove('frameboyantTogglingEditMode');
+    });
+  }
+};
+
+const handleUIChange = (() => {
   let lastObservedHeight = -1;
 
-  const handleUIChange = () => {
+  return () => {
     const bodyHeight = document.body.offsetHeight;
     if (lastObservedHeight !== bodyHeight) {
-      parent.setIframeHeight(bodyHeight);
+      if (parent) {
+        parent.setIframeHeight(bodyHeight);
+      }
+
       lastObservedHeight = bodyHeight;
     }
   };
+})();
 
-  const uiObserver = new UIObserver(handleUIChange);
+const uiObserver = new UIObserver(handleUIChange);
+
+const setParent = once(value => {
+  parent = value;
   uiObserver.observe();
   handleUIChange(); // Let the parent know about our initial height.
-
-  onClick = event => {
-    if (editMode) {
-      if (event.target === document.documentElement && !event.frameboyantSimulated) {
-        logger.log('deactivating edit mode');
-        editMode = false;
-        document.body.classList.add('frameboyantTogglingEditMode');
-
-        parent.deactivateEditMode().then(() => {
-          clearContentRect();
-          document.body.classList.remove('frameboyantTogglingEditMode');
-        });
-      }
-    } else {
-      logger.log('activating edit mode');
-      editMode = true;
-
-      const clickTarget = event.target;
-      preventEvent(event);
-      document.body.classList.add('frameboyantTogglingEditMode');
-
-      parent.activateEditMode().then(contentRect => {
-        setContentRect(contentRect);
-        document.body.classList.remove('frameboyantTogglingEditMode');
-
-        const simulatedClickEvent = new MouseEvent('click', {
-          bubbles: true,
-          cancelable: true
-        });
-
-        simulatedClickEvent.frameboyantSimulated = true;
-
-        clickTarget.dispatchEvent(simulatedClickEvent);
-
-        logger.log('edit mode activated');
-      });
-    }
-  };
 });
+
+document.addEventListener('click', handleClick, true);
+document.addEventListener('focus', enterEditMode, true);
+addStylesToPage(STYLES);
 
 export default {
   setParent,
-  setContentRect
+  setContentRect,
+  exitEditMode
 };

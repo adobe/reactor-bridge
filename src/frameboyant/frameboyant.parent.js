@@ -73,8 +73,10 @@ export default editModeZIndex => {
     iframeContainerStyle.zIndex = editModeZIndex;
     iframeContainerStyle.top = -offsetFromDoc.top + 'px';
     iframeContainerStyle.left = -offsetFromDoc.left + 'px';
-    iframeContainerStyle.right = -(document.documentElement.offsetWidth - offsetFromDoc.left - offsetWidth) + 'px';
-    iframeContainerStyle.bottom = -(document.documentElement.offsetHeight - offsetFromDoc.top - offsetHeight) + 'px';
+    iframeContainerStyle.right =
+      -(document.documentElement.offsetWidth - offsetFromDoc.left - offsetWidth) + 'px';
+    iframeContainerStyle.bottom =
+      -(document.documentElement.offsetHeight - offsetFromDoc.top - offsetHeight) + 'px';
   };
 
   const updateDomForNormalMode = () => {
@@ -93,8 +95,16 @@ export default editModeZIndex => {
   const uiObserver = new UIObserver(() => {
     logger.log('UI mutation observed');
     updateDomForEditMode();
-    child.setContentRect(getIframeContentRect());
+    if (child) {
+      child.setContentRect(getIframeContentRect());
+    }
   });
+
+  document.addEventListener('focus', () => {
+    if (child) {
+      child.exitEditMode();
+    }
+  }, true);
 
   return {
     root,
@@ -104,14 +114,14 @@ export default editModeZIndex => {
       child.iframe.classList.add('frameboyantIframe');
       iframeContainer.appendChild(child.iframe);
     },
-    activateEditMode() {
-      logger.log('Activating edit mode');
+    editModeEntered() {
+      logger.log('Entering edit mode');
       updateDomForEditMode();
       uiObserver.observe();
       return getIframeContentRect();
     },
-    deactivateEditMode() {
-      logger.log('Deactivating edit mode');
+    editModeExited() {
+      logger.log('Exiting edit mode');
       uiObserver.disconnect();
       updateDomForNormalMode();
     },

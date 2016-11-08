@@ -11,10 +11,10 @@ loadIframe({
   openDataElementSelector: noop,
   openCssSelector: noop,
   editModeZIndex: 1001,
-  activateEditMode() {
+  editModeEntered() {
     document.getElementById('backdrop').classList.add('editMode');
   },
-  deactivateEditMode() {
+  editModeExited() {
     document.getElementById('backdrop').classList.remove('editMode');
   }
 }).then(() => {

@@ -22,7 +22,6 @@ export const ERROR_CODES = {
  * iframe, etc.
  * @property {HTMLElement} iframeContainer A container the iframe sits within. This container is
  * needed in order for edit mode to work properly.
- * @property {Function} init Initializes the extension view.
  * @property {Function} validate Validates the extension view.
  * @property {Function} getSettings Retrieves settings from the extension view.
  * @property {Function} destroy Removes the iframe from its container and cleans up any supporting
@@ -51,10 +50,10 @@ export const ERROR_CODES = {
  * with the generated CSS selector.
  * @param {number} [options.editModeZIndex=1000] The z-index the iframe should be given when it is
  * in edit mode.
- * @param {Function} [options.activateEditMode] A function that will be called when edit mode
- * is activated.
- * @param {Function} [options.deactivateEditMode] A function that will be called when edit mode
- * is deactivated.
+ * @param {Function} [options.editModeEntered] A function that will be called when edit mode
+ * is entered.
+ * @param {Function} [options.editModeExited] A function that will be called when edit mode
+ * is exited.
  * @param {number} [options.connectionTimeoutDuration=10000] The amount of time, in milliseconds,
  * that must pass while attempting to establish communication with the iframe before rejecting
  * the returned promise with a CONNECTION_TIMEOUT error code.
@@ -77,8 +76,8 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     openDataElementSelector,
     openCssSelector,
     editModeZIndex = 1000,
-    activateEditMode = noop,
-    deactivateEditMode = noop,
+    editModeEntered = noop,
+    editModeExited = noop,
     connectionTimeoutDuration = CONNECTION_TIMEOUT_DURATION,
     renderTimeoutDuration = RENDER_TIMEOUT_DURATION
   } = options;
@@ -106,13 +105,13 @@ export const loadIframe = options => new Promise((resolve, reject) => {
       openRegexTester,
       openDataElementSelector,
       openCssSelector,
-      activateEditMode: () => {
-        activateEditMode();
-        return frameboyant.activateEditMode();
+      editModeEntered: () => {
+        editModeEntered();
+        return frameboyant.editModeEntered();
       },
-      deactivateEditMode: () => {
-        deactivateEditMode();
-        frameboyant.deactivateEditMode();
+      editModeExited: () => {
+        editModeExited();
+        frameboyant.editModeExited();
       },
       setIframeHeight(...args) {
         frameboyant.setIframeHeight(...args);
@@ -122,10 +121,11 @@ export const loadIframe = options => new Promise((resolve, reject) => {
   }).then(child => {
     clearTimeout(connectionTimeoutId);
 
+    child.iframe.setAttribute('sandbox', 'allow-scripts');
+
     const api = {
       iframe: child.iframe,
       iframeContainer: frameboyant.container,
-      init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
       destroy: frameboyant.destroy
@@ -144,7 +144,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     });
 
     frameboyant.setChild(child);
-    api.init(extensionInitOptions).then(resolveInitComplete);
+    child.init(extensionInitOptions).then(resolveInitComplete);
   });
 });
 

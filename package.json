@@ -14,8 +14,10 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
+    "build": "webpack --config webpack.parent.config.js && webpack --config webpack.child.config.js",
     "test": "./node_modules/.bin/karma start",
-    "sandbox": "./sandbox/scripts/runSandbox.js"
+    "sandbox": "./sandbox/scripts/runSandbox.js",
+    "prepublish": "npm run build"
   },
   "files": [
     "dist",

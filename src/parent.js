@@ -126,6 +126,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     const api = {
       iframe: child.iframe,
       iframeContainer: frameboyant.container,
+      init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
       destroy: frameboyant.destroy

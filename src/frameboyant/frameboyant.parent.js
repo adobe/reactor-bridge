@@ -1,4 +1,3 @@
-import docOffset from 'document-offset';
 import addStylesToPage from '../utils/addStylesToPage';
 import UIObserver from '../utils/uiObserver';
 import Logger from '../utils/logger';
@@ -32,11 +31,26 @@ const STYLES = `
 
 addStylesToPage(STYLES);
 
-const getOffsetFromDocument = element => {
-  const rect = element.getBoundingClientRect();
-  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-  return { top: rect.top + scrollTop, left: rect.left + scrollLeft }
+/**
+ * ...
+ * @param element
+ * @returns {{top: *, left: *, width: number, height: number}}
+ */
+const getDocumentOffsetRect = element => {
+  const offsetParent = element.offsetParent;
+  const elementStyle = getComputedStyle(offsetParent);
+  const offsetParentRect = offsetParent.getBoundingClientRect();
+
+  const top = window.pageYOffset + offsetParentRect.top +
+    parseFloat(elementStyle.borderTopWidth);
+  const left = window.pageXOffset + offsetParentRect.left +
+    parseFloat(elementStyle.borderLeftWidth);
+  const width = offsetParentRect.width - parseFloat(elementStyle.borderLeftWidth) -
+    parseFloat(elementStyle.borderRightWidth);
+  const height = offsetParentRect.height - parseFloat(elementStyle.borderTopWidth) -
+    parseFloat(elementStyle.borderBottomWidth);
+
+  return { top, left, width, height };
 };
 
 export default editModeZIndex => {
@@ -52,31 +66,30 @@ export default editModeZIndex => {
   root.appendChild(iframeContainer);
 
   const getIframeContentRect = () => {
-    const { top, left } = docOffset(root);
+    // const { top, left } = docOffset(root);
     const { width } = root.getBoundingClientRect();
+    const rootRect = root.getBoundingClientRect();
 
     return {
-      top,
-      left,
+      top: window.pageYOffset + rootRect.top,
+      left: window.pageXOffset + rootRect.left,
       width,
     };
   };
 
   const updateDomForEditMode = () => {
     const iframeContainerStyle = iframeContainer.style;
-    const offsetParent = iframeContainer.offsetParent;
-    const offsetFromDoc = getOffsetFromDocument(offsetParent);
-    const offsetWidth = offsetParent.offsetWidth;
-    const offsetHeight = offsetParent.offsetHeight;
+    const offsetRect = getDocumentOffsetRect(iframeContainer);
+    const docElement = document.documentElement;
 
     root.classList.add('editMode');
     iframeContainerStyle.zIndex = editModeZIndex;
-    iframeContainerStyle.top = -offsetFromDoc.top + 'px';
-    iframeContainerStyle.left = -offsetFromDoc.left + 'px';
+    iframeContainerStyle.top = -offsetRect.top + 'px';
+    iframeContainerStyle.left = -offsetRect.left + 'px';
     iframeContainerStyle.right =
-      -(document.documentElement.offsetWidth - offsetFromDoc.left - offsetWidth) + 'px';
+      (offsetRect.left + offsetRect.width) - docElement.offsetWidth + 'px';
     iframeContainerStyle.bottom =
-      -(document.documentElement.offsetHeight - offsetFromDoc.top - offsetHeight) + 'px';
+      (offsetRect.top + offsetRect.height) - docElement.offsetHeight + 'px';
   };
 
   const updateDomForNormalMode = () => {

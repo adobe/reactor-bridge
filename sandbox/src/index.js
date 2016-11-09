@@ -4,7 +4,7 @@ const noop = () => {};
 
 loadIframe({
   url: '//localhost:9800/iframe.html',
-  container: document.getElementById('ruleComponent'),
+  container: document.getElementById('iframeHolder'),
   extensionInitOptions: {},
   openCodeEditor: noop,
   openRegexTester: noop,

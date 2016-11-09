@@ -36,7 +36,7 @@ const STYLES = `
     display: block !important;
     position: relative !important;
     height: 100% !important;
-  };
+  }
 
   /*
     Toggling edit mode is an asynchronous operation due to postMessage being asynchronous. While
@@ -44,8 +44,8 @@ const STYLES = `
     see the iframe's content moving around the page. To prevent this from happening, we'll hide
     the body which hopefully will be a better form a flicker.
   */
-  body.frameboyantTogglingEditMode {
-    display: none !important;
+  .frameboyantTogglingEditMode {
+    visibility: hidden !important;
   }
 `;
 
@@ -70,7 +70,8 @@ const createSimulatedClickEvent = () => {
   return simulatedClickEvent;
 };
 
-const handleClick = event => {
+const handleMouseDown = event => {
+  console.log('handle click');
   if (editMode) {
     if (event.target === document.documentElement && !isSimulatedClickEvent(event)) {
       exitEditMode();
@@ -81,10 +82,10 @@ const handleClick = event => {
     // have a calculation to determine the best placement due to how much space is around it.
     // We want to make sure we've already entered edit mode by the time this calculation is made
     // so it can have the full edit mode area to consider.
-    const clickTarget = event.target;
-    preventEvent(event);
+    // const clickTarget = event.target;
+    // preventEvent(event);
     enterEditMode().then(() => {
-      clickTarget.dispatchEvent(createSimulatedClickEvent());
+      // clickTarget.dispatchEvent(createSimulatedClickEvent());
     });
   }
 };
@@ -154,8 +155,9 @@ const setParent = once(value => {
   handleUIChange(); // Let the parent know about our initial height.
 });
 
-document.addEventListener('click', handleClick, true);
-document.addEventListener('focus', enterEditMode, true);
+// document.addEventListener('click', handleClick, true);
+document.addEventListener('mousedown', handleMouseDown, true);
+// TODO: Fix. document.addEventListener('focus', enterEditMode, true);
 addStylesToPage(STYLES);
 
 export default {

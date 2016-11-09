@@ -21,8 +21,19 @@ body {
   margin: 0 100px;
 }
 
-#ruleComponent.loading {
+#ruleComponent.loading #iframeHolder {
+  /* Can't set display: none or the iframe can't correctly detect its content height. */
+  visibility: hidden;
+  height: 0;
+  overflow: hidden;
+}
+
+#ruleComponent #loadingLabel {
   display: none;
+}
+
+#ruleComponent.loading #loadingLabel {
+  display: block;
 }
 
 #animatedBox {

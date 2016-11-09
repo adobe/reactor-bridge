@@ -27,4 +27,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // setTimeout(function() {
 //   document.getElementById('bigImage').setAttribute('src', 'http://static.pexels.com/photos/87646/horsehead-nebula-dark-nebula-constellation-orion-87646.jpeg');
-// }, 2000);
+// }, 200);

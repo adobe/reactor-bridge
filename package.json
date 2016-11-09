@@ -14,7 +14,7 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
-    "build": "webpack --config webpack.parent.config.js && webpack --config webpack.child.config.js",
+    "build": "webpack --config webpack.child.config.js",
     "test": "./node_modules/.bin/karma start",
     "sandbox": "./sandbox/scripts/runSandbox.js",
     "prepublish": "npm run build"
@@ -23,13 +23,12 @@
     "dist",
     "lib"
   ],
-  "main": "./lib/parent.js",
+  "main": "./src/parent.js",
   "dependencies": {
     "domready": "^1.0.8",
     "native-promise-only-ponyfill": "^1.0.1",
-    "penpal": "^1.0.2",
-    "document-offset": "^1.0.4",
-    "once": "^1.4.0"
+    "once": "^1.4.0",
+    "penpal": "^1.0.2"
   },
   "devDependencies": {
     "async": "^2.1.2",

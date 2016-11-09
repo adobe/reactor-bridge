@@ -1,9 +1,8 @@
 import domready from 'domready';
 
-// List of events that could potentially change content without triggering a mutation observer.
-// Inspired by
-// https://github.com/davidjbradshaw/iframe-resizer/blob/86daa57745f630385e3eb6b03af02dac49d8b777/src/iframeResizer.contentWindow.js#L291-L310
-var contentPositionChangingEvents = [
+// List of events that could potentially change UI layout without triggering a mutation observer.
+// Inspired by https://github.com/davidjbradshaw/iframe-resizer/blob/86daa57745f630385e3eb6b03af02dac49d8b777/src/iframeResizer.contentWindow.js#L291-L310
+var uiChangeEvents = [
   'animationstart',
   'webkitAnimationStart',
   'animationiteration',
@@ -56,35 +55,46 @@ const masterObserver = (() => {
     }
   };
 
+  const hasDOMContentLoaded = () =>
+    document.readyState === 'interactive' || document.readyState === 'complete';
+
+  const startObservations = () => {
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      attributeOldValue: false,
+      characterData: true,
+      characterDataOldValue: false,
+      childList: true,
+      subtree: true
+    });
+
+    uiChangeEvents.forEach(eventType => {
+      window.addEventListener(eventType, callHandlers);
+    });
+
+    // Watch for images and similar resources to load. Load events don't bubble so we must
+    // use capture. We can't add the event listener to body because "For legacy reasons, load
+    // events for resources inside the document (e.g., images) do not include the Window in the
+    // propagation path in HTML implementations"
+    document.body.addEventListener('load', loadHandler, true);
+  };
+
+  const domContentLoadedHandler = () => {
+    startObservations();
+    callHandlers();
+  };
+
   const observe = function() {
     if (!observing) {
       observing = true;
-      domready(() => {
-        // If _observe() was called before dom was ready, then _disconnect() was called, then dom
-        // became ready, we should not proceed.
-        if (!observing) {
-          return;
-        }
 
-        mutationObserver.observe(document.body, {
-          attributes: true,
-          attributeOldValue: false,
-          characterData: true,
-          characterDataOldValue: false,
-          childList: true,
-          subtree: true
-        });
-
-        contentPositionChangingEvents.forEach(eventType => {
-          window.addEventListener(eventType, callHandlers);
-        });
-
-        // Load events don't bubble so we must use capture.
-        // We can't add the event to window because "For legacy reasons, load events for
-        // resources inside the document (e.g., images) do not include the Window in the
-        // propagation path in HTML implementations"
-        document.body.addEventListener('load', loadHandler, true);
-      });
+      if (hasDOMContentLoaded()) {
+        startObservations();
+      } else {
+        // When the DOM content has loaded, we can start observations because we have access to
+        // the necessary DOM element
+        document.addEventListener('DOMContentLoaded', domContentLoadedHandler);
+      }
     }
   };
 
@@ -92,21 +102,17 @@ const masterObserver = (() => {
     if (observing) {
       observing = false;
 
-      domready(() => {
-        // If _disconnect() was called before dom was ready, then _observe() was called, then dom
-        // became ready, we should not proceed.
-        if (observing) {
-          return;
-        }
+      mutationObserver.disconnect();
 
-        mutationObserver.disconnect();
+      document.removeEventListener('DOMContentLoaded', domContentLoadedHandler);
 
-        contentPositionChangingEvents.forEach(eventType => {
-          window.removeEventListener(eventType, callHandlers);
-        });
+      uiChangeEvents.forEach(eventType => {
+        window.removeEventListener(eventType, callHandlers);
+      });
 
+      if (document.body) { // In case disconnect is called before DOMContentLoaded.
         document.body.removeEventListener('load', loadHandler, true);
-      })
+      }
     }
   };
 

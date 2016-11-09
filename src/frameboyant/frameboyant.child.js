@@ -42,10 +42,13 @@ const STYLES = `
     Toggling edit mode is an asynchronous operation due to postMessage being asynchronous. While
     toggling, the iframe gets shifted around the parent document at times causing the user to
     see the iframe's content moving around the page. To prevent this from happening, we'll hide
-    the body which hopefully will be a better form a flicker.
+    the body which hopefully will be a better form of flicker. We tried setting visibility to 
+    hidden, but it appeared to caus issues with React synthetic events (mousedown, blur, etc)
+    after it was unhidden. Tweaking opacity is our best attempt at hiding the content 
+    without causing problems.
   */
   .frameboyantTogglingEditMode {
-    visibility: hidden !important;
+    opacity: 0 !important;
   }
 `;
 

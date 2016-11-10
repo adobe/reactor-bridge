@@ -29,12 +29,16 @@ const STYLES = `
   body {
     /* 
        When in edit mode, we'll be giving body some margin. If the children of body also have 
-       margin, this can cause the margins to "collapse" into each other. 
+       margin, this can cause their margins to "collapse" into the body's margin. 
        https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing.
        Using padding of 0.1px prevents margins from collapsing while (hopefully) not causing any
        problematic side-effects.
+       
+       We don't use !important here because it's likely that an extension will legitimately want
+       to override padding which is fine though if they set a padding of 0 then margins may
+       collapse.
     */
-    padding: 0.1px !important;
+    padding: 0.1px;
     
     margin: 0 !important;
     display: block !important;

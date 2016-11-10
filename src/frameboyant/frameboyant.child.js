@@ -1,6 +1,6 @@
+import LayoutObserver from 'layout-observer';
 import addStylesToPage from '../utils/addStylesToPage';
 import Logger from '../utils/logger';
-import UIObserver from '../utils/uiObserver';
 import once from 'once';
 
 const logger = new Logger('Frameboyant:Child');
@@ -130,11 +130,11 @@ const handleUIChange = (() => {
   };
 })();
 
-const uiObserver = new UIObserver(handleUIChange);
+const layoutObserver = new LayoutObserver(handleUIChange);
 
 const setParent = once(value => {
   parent = value;
-  uiObserver.observe();
+  layoutObserver.observe();
   handleUIChange(); // Let the parent know about our initial height.
 });
 

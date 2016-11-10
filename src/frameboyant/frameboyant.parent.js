@@ -1,5 +1,5 @@
+import LayoutObserver from 'layout-observer';
 import addStylesToPage from '../utils/addStylesToPage';
-import UIObserver from '../utils/uiObserver';
 import Logger from '../utils/logger';
 
 const logger = new Logger('Frameboyant:Parent');
@@ -133,7 +133,7 @@ export default editModeZIndex => {
 
   // Watch for any UI mutations in the parent window. If any are seen, we need to update the
   // content position inside the iframe. This is only necessary when we're in edit mode.
-  const uiObserver = new UIObserver(() => {
+  const layoutObserver = new LayoutObserver(() => {
     logger.log('UI mutation observed');
     updateDomForEditMode();
     if (child) {
@@ -158,12 +158,12 @@ export default editModeZIndex => {
     editModeEntered() {
       logger.log('Entering edit mode');
       updateDomForEditMode();
-      uiObserver.observe();
+      layoutObserver.observe();
       return getIframeContentRect();
     },
     editModeExited() {
       logger.log('Exiting edit mode');
-      uiObserver.disconnect();
+      layoutObserver.disconnect();
       updateDomForNormalMode();
     },
     setIframeHeight(height) {
@@ -171,7 +171,7 @@ export default editModeZIndex => {
       root.style.height = height + 'px';
     },
     destroy() {
-      uiObserver.disconnect();
+      layoutObserver.disconnect();
 
       if (root.parentNode) {
         root.parentNode.removeChild(root);

@@ -125,7 +125,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
 
     const api = {
       iframe: child.iframe,
-      iframeContainer: frameboyant.container,
+      rootNode: frameboyant.root,
       init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
@@ -149,10 +149,11 @@ export const loadIframe = options => new Promise((resolve, reject) => {
   });
 });
 
-export const setPromise = value => Promise = value;
+export const setPromise = value => {
+  Promise = value;
+  PenPal.Promise = value;
+};
 export const setDebug = value => {
   PenPal.debug = value;
   Logger.enabled = value;
 };
-
-setDebug(true);

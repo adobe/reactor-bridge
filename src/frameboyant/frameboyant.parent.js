@@ -142,8 +142,10 @@ export default editModeZIndex => {
     }
   });
 
-  document.addEventListener('focus', () => {
-    if (child) {
+  document.addEventListener('focus', event => {
+    // In at least IE 11, if something in the iframe gains focus, we'll get an event with iframe
+    // as the target.
+    if (child && event.target !== child.iframe) {
       child.exitEditMode();
     }
   }, true);
@@ -167,6 +169,7 @@ export default editModeZIndex => {
       updateDomForNormalMode();
     },
     setIframeHeight(height) {
+      return;
       logger.log('Setting iframe height', height);
       root.style.height = height + 'px';
     },

@@ -15,8 +15,9 @@
   },
   "scripts": {
     "build": "webpack --config webpack.child.config.js",
-    "test": "./node_modules/.bin/karma start",
-    "sandbox": "./sandbox/scripts/runSandbox.js",
+    "build:watch": "npm run build -- --watch",
+    "test": "karma start",
+    "sandbox": "./sandbox/scripts/run.js",
     "prepublish": "npm run build"
   },
   "files": [

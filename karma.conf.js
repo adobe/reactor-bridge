@@ -27,10 +27,6 @@ const serveFixtures = () => {
   http.createServer(childIframes).listen(9800);
 };
 
-const webpackConfig = require('./webpack.parent.config');
-delete webpackConfig.entry;
-delete webpackConfig.output;
-
 module.exports = function(config) {
   serveFixtures();
 
@@ -46,7 +42,21 @@ module.exports = function(config) {
     preprocessors: {
       'src/__tests__/*.test.js': ['webpack']
     },
-    webpack: webpackConfig,
+    webpack: {
+      module: {
+        loaders: [
+          {
+            test: /.js$/,
+            exclude: /node_modules/,
+            loader: 'babel',
+            query: {
+              presets: ['es2015'],
+              plugins: ['transform-object-rest-spread']
+            }
+          }
+        ]
+      }
+    },
     reporters: ['dots'],
     port: 9801,
     colors: true,

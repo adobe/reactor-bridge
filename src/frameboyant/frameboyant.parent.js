@@ -169,7 +169,6 @@ export default editModeZIndex => {
       updateDomForNormalMode();
     },
     setIframeHeight(height) {
-      return;
       logger.log('Setting iframe height', height);
       root.style.height = height + 'px';
     },

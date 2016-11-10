@@ -125,7 +125,6 @@ export default editModeZIndex => {
     setChild(value) {
       child = value;
       child.iframe.classList.add('frameboyantIframe');
-      iframeContainer.appendChild(child.iframe);
     },
     editModeEntered() {
       logger.log('Entering edit mode');

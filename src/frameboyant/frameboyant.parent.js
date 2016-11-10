@@ -84,7 +84,11 @@ export default editModeZIndex => {
 
     // We have to be careful not to perform any of the operations below unless the values are
     // actually changing, otherwise they will trigger our mutation observer in at least Firefox
-    // which causes an infinite loop.
+    // which causes an infinite loop. Some browsers, like Firefox, also do some rounding internally
+    // (to the tenth of a pixel) so when we set a value of, say, "1.74939939057px", it's rounded
+    // internally to "1.7px". Our mutation observe is triggered which brings us back into this
+    // function and because "1.74939939057px" does not match "1.7px", we attempt to set the style
+    // again, which continues the cycle, causing an infinite loop.
 
     if (!root.classList.contains('editMode')) {
       root.classList.add('editMode');
@@ -95,22 +99,22 @@ export default editModeZIndex => {
       iframeContainerStyle.zIndex = newZIndex;
     }
 
-    const newTop = -offsetRect.top + 'px';
+    const newTop = Math.round(-offsetRect.top) + 'px';
     if (iframeContainerStyle.top !== newTop) {
       iframeContainerStyle.top = newTop;
     }
 
-    const newLeft = -offsetRect.left + 'px';
-    if (iframeContainerStyle.right !== newLeft) {
+    const newLeft = Math.round(-offsetRect.left) + 'px';
+    if (iframeContainerStyle.left !== newLeft) {
       iframeContainerStyle.left = newLeft;
     }
 
-    const newRight = (offsetRect.left + offsetRect.width) - docElement.offsetWidth + 'px';
+    const newRight = Math.round(offsetRect.left + offsetRect.width - docElement.offsetWidth) + 'px';
     if (iframeContainerStyle.right !== newRight) {
       iframeContainerStyle.right = newRight;
     }
 
-    const newBottom = (offsetRect.top + offsetRect.height) - docElement.offsetHeight + 'px';
+    const newBottom = Math.round(offsetRect.top + offsetRect.height - docElement.offsetHeight) + 'px';
     if (iframeContainerStyle.bottom !== newBottom) {
       iframeContainerStyle.bottom = newBottom;
     }

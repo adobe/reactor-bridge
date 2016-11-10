@@ -58,18 +58,15 @@ module.exports = {
   openDataElementSelector: wrapOpenSharedViewMethod('openDataElementSelector', 'data element selector'),
   openCssSelector: wrapOpenSharedViewMethod('openCssSelector', 'CSS selector'),
   openRegexTester: wrapOpenSharedViewMethod('openRegexTester', 'regex tester'),
-  register: function(methods) {
+  register(methods) {
     extensionViewMethods = {
       ...methods
     };
 
     logger.log('Methods registered by extension.');
   },
-  setDebug: function(value) {
+  setDebug(value) {
     PenPal.debug = value;
     Logger.enabled = value;
   }
 };
-
-module.exports.setDebug(true);
-

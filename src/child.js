@@ -71,5 +71,5 @@ module.exports = {
   }
 };
 
-// module.exports.setDebug(true);
+module.exports.setDebug(true);
 

@@ -82,14 +82,38 @@ export default editModeZIndex => {
     const offsetRect = getDocumentOffsetRect(iframeContainer);
     const docElement = document.documentElement;
 
-    root.classList.add('editMode');
-    iframeContainerStyle.zIndex = editModeZIndex;
-    iframeContainerStyle.top = -offsetRect.top + 'px';
-    iframeContainerStyle.left = -offsetRect.left + 'px';
-    iframeContainerStyle.right =
-      (offsetRect.left + offsetRect.width) - docElement.offsetWidth + 'px';
-    iframeContainerStyle.bottom =
-      (offsetRect.top + offsetRect.height) - docElement.offsetHeight + 'px';
+    // We have to be careful not to perform any of the operations below unless the values are
+    // actually changing, otherwise they will trigger our mutation observer in at least Firefox
+    // which causes an infinite loop.
+
+    if (!root.classList.contains('editMode')) {
+      root.classList.add('editMode');
+    }
+
+    const newZIndex = String(editModeZIndex);
+    if (iframeContainerStyle.zIndex !== newZIndex) {
+      iframeContainerStyle.zIndex = newZIndex;
+    }
+
+    const newTop = -offsetRect.top + 'px';
+    if (iframeContainerStyle.top !== newTop) {
+      iframeContainerStyle.top = newTop;
+    }
+
+    const newLeft = -offsetRect.left + 'px';
+    if (iframeContainerStyle.right !== newLeft) {
+      iframeContainerStyle.left = newLeft;
+    }
+
+    const newRight = (offsetRect.left + offsetRect.width) - docElement.offsetWidth + 'px';
+    if (iframeContainerStyle.right !== newRight) {
+      iframeContainerStyle.right = newRight;
+    }
+
+    const newBottom = (offsetRect.top + offsetRect.height) - docElement.offsetHeight + 'px';
+    if (iframeContainerStyle.bottom !== newBottom) {
+      iframeContainerStyle.bottom = newBottom;
+    }
   };
 
   const updateDomForNormalMode = () => {
@@ -109,7 +133,8 @@ export default editModeZIndex => {
     logger.log('UI mutation observed');
     updateDomForEditMode();
     if (child) {
-      child.setContentRect(getIframeContentRect());
+      const iframeContentRect = getIframeContentRect();
+      child.setContentRect(iframeContentRect);
     }
   });
 

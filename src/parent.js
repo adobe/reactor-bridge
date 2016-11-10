@@ -155,4 +155,4 @@ export const setDebug = value => {
   Logger.enabled = value;
 };
 
-// setDebug(true);
+setDebug(true);

@@ -19,6 +19,10 @@ const STYLES = `
   }
   
   html, body {
+    /*
+      Prevent infinite resizing
+    */
+    height: auto !important;
     background-color: transparent !important;
   }
   
@@ -55,41 +59,13 @@ const STYLES = `
 let parent;
 let editMode = false;
 
-const preventEvent = event => {
-  event.preventDefault();
-  event.stopPropagation();
-};
-
-const isSimulatedClickEvent = event => event.frameboyantSimulated;
-
-const createSimulatedClickEvent = () => {
-  const simulatedClickEvent = new MouseEvent('click', {
-    bubbles: true,
-    cancelable: true
-  });
-
-  simulatedClickEvent.frameboyantSimulated = true;
-
-  return simulatedClickEvent;
-};
-
 const handleMouseDown = event => {
-  console.log('handle click');
   if (editMode) {
-    if (event.target === document.documentElement && !isSimulatedClickEvent(event)) {
+    if (event.target === document.documentElement) {
       exitEditMode();
     }
   } else {
-    // We prevent the click until edit mode has been entered and then re-trigger it. We do this
-    // because the click may be, for example, triggering a popover. The popover will possibly
-    // have a calculation to determine the best placement due to how much space is around it.
-    // We want to make sure we've already entered edit mode by the time this calculation is made
-    // so it can have the full edit mode area to consider.
-    // const clickTarget = event.target;
-    // preventEvent(event);
-    enterEditMode().then(() => {
-      // clickTarget.dispatchEvent(createSimulatedClickEvent());
-    });
+    enterEditMode();
   }
 };
 
@@ -136,16 +112,16 @@ const exitEditMode = () => {
 };
 
 const handleUIChange = (() => {
-  let lastObservedHeight = -1;
+  let previousObservedHeight = -1;
 
   return () => {
     const bodyHeight = document.body.offsetHeight;
-    if (lastObservedHeight !== bodyHeight) {
+    if (previousObservedHeight !== bodyHeight) {
       if (parent) {
         parent.setIframeHeight(bodyHeight);
       }
 
-      lastObservedHeight = bodyHeight;
+      previousObservedHeight = bodyHeight;
     }
   };
 })();
@@ -158,9 +134,7 @@ const setParent = once(value => {
   handleUIChange(); // Let the parent know about our initial height.
 });
 
-// document.addEventListener('click', handleClick, true);
 document.addEventListener('mousedown', handleMouseDown, true);
-// TODO: Fix. document.addEventListener('focus', enterEditMode, true);
 addStylesToPage(STYLES);
 
 export default {

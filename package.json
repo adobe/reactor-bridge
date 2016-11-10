@@ -14,17 +14,16 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
-    "build": "webpack --config webpack.child.config.js",
-    "build:watch": "npm run build -- --watch",
+    "build": "webpack --config webpack.child.config.js && babel src --out-dir lib --ignore __tests__",
     "test": "karma start",
     "sandbox": "./sandbox/scripts/run.js",
     "prepublish": "npm run build"
   },
   "files": [
     "dist",
-    "src"
+    "lib"
   ],
-  "main": "./src/parent.js",
+  "main": "./lib/parent.js",
   "dependencies": {
     "domready": "^1.0.8",
     "native-promise-only-ponyfill": "^1.0.1",
@@ -33,6 +32,7 @@
   },
   "devDependencies": {
     "async": "^2.1.2",
+    "babel-cli": "^6.18.0",
     "babel-core": "^6.18.0",
     "babel-loader": "^6.2.7",
     "babel-plugin-transform-object-rest-spread": "^6.16.0",

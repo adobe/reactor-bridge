@@ -22,7 +22,7 @@
   },
   "files": [
     "dist",
-    "lib"
+    "src"
   ],
   "main": "./src/parent.js",
   "dependencies": {

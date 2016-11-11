@@ -14,7 +14,10 @@
     "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
-    "build": "webpack --config webpack.child.config.js && babel src --out-dir lib --ignore __tests__",
+    "build:child": "webpack --config webpack.child.config.js",
+    "build:parent": "babel src --out-dir lib --ignore __tests__",
+    "build": "npm-run-all --parallel build-child build-parent",
+    "build:watch": "npm-run-all --parallel 'build:child -- --watch' 'build:parent -- --watch'",
     "test": "karma start",
     "sandbox": "./sandbox/scripts/run.js",
     "prepublish": "npm run build"

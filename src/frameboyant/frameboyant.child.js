@@ -139,6 +139,7 @@ const setParent = once(value => {
 });
 
 document.addEventListener('mousedown', handleMouseDown, true);
+document.addEventListener('focus', enterEditMode, true);
 addStylesToPage(STYLES);
 
 export default {

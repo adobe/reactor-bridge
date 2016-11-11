@@ -31,29 +31,84 @@ const STYLES = `
 
 addStylesToPage(STYLES);
 
-/**
- * ...
- * @param element
- * @returns {{top: *, left: *, width: number, height: number}}
- */
-const getDocumentOffsetRect = element => {
-  const offsetParent = element.offsetParent;
-  const elementStyle = getComputedStyle(offsetParent);
+const getEditModeMeasurements = (iframeContainer, boundsContainer, root) => {
+  const offsetParent = iframeContainer.offsetParent;
+  const offsetParentStyle = getComputedStyle(offsetParent);
+  const editModeBoundsContainerRect = boundsContainer.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
+  const editModeBoundsContainerStyle = getComputedStyle(boundsContainer);
   const offsetParentRect = offsetParent.getBoundingClientRect();
 
-  const top = window.pageYOffset + offsetParentRect.top +
-    parseFloat(elementStyle.borderTopWidth);
-  const left = window.pageXOffset + offsetParentRect.left +
-    parseFloat(elementStyle.borderLeftWidth);
-  const width = offsetParentRect.width - parseFloat(elementStyle.borderLeftWidth) -
-    parseFloat(elementStyle.borderRightWidth);
-  const height = offsetParentRect.height - parseFloat(elementStyle.borderTopWidth) -
-    parseFloat(elementStyle.borderBottomWidth);
+  const iframeContainerMeasurements = {
+    top:
+      -(
+        boundsContainer.scrollTop +
+        (
+          offsetParentRect.top -
+          editModeBoundsContainerRect.top -
+          parseFloat(editModeBoundsContainerStyle.borderTopWidth)
+        ) +
+        parseFloat(offsetParentStyle.borderTopWidth)
+      ),
+    left:
+      -(
+        boundsContainer.scrollLeft +
+        (
+          offsetParentRect.left -
+          editModeBoundsContainerRect.left -
+          parseFloat(editModeBoundsContainerStyle.borderLeftWidth)
+        ) +
+        parseFloat(offsetParentStyle.borderLeftWidth)
+      ),
+    right:
+      -(
+        boundsContainer.offsetWidth +
+        boundsContainer.scrollLeft -
+        (
+          offsetParentRect.right -
+          editModeBoundsContainerRect.left -
+          parseFloat(editModeBoundsContainerStyle.borderRightWidth)
+        ) +
+        parseFloat(offsetParentStyle.borderRightWidth)
+      ),
+    bottom:
+      -(
+        boundsContainer.offsetHeight -
+        boundsContainer.scrollTop -
+        (
+          offsetParentRect.bottom -
+          editModeBoundsContainerRect.top -
+          parseFloat(editModeBoundsContainerStyle.borderBottomWidth)
+        ) +
+        parseFloat(offsetParentStyle.borderBottomWidth)
+      )
+  };
 
-  return { top, left, width, height };
+  const iframeContentMeasurements = {
+    top:
+      boundsContainer.scrollTop +
+      (
+        rootRect.top -
+        editModeBoundsContainerRect.top -
+        parseFloat(editModeBoundsContainerStyle.borderTopWidth)
+      ),
+    left:
+      boundsContainer.scrollLeft +
+      (
+        rootRect.left -
+        editModeBoundsContainerRect.left -
+        parseFloat(editModeBoundsContainerStyle.borderLeftWidth)
+      ),
+    width: root.clientWidth
+  };
+
+  return {
+    iframeContainerMeasurements,
+    iframeContentMeasurements
+  };
 };
 
-export default editModeZIndex => {
+export default ({ editModeBoundsContainer, editModeZIndex }) => {
   logger.log('Initializing an iframe');
 
   let child;
@@ -65,22 +120,12 @@ export default editModeZIndex => {
   iframeContainer.classList.add('frameboyantIframeContainer');
   root.appendChild(iframeContainer);
 
-  const getIframeContentRect = () => {
-    // const { top, left } = docOffset(root);
-    const { width } = root.getBoundingClientRect();
-    const rootRect = root.getBoundingClientRect();
-
-    return {
-      top: window.pageYOffset + rootRect.top,
-      left: window.pageXOffset + rootRect.left,
-      width,
-    };
-  };
-
   const updateDomForEditMode = () => {
     const iframeContainerStyle = iframeContainer.style;
-    const offsetRect = getDocumentOffsetRect(iframeContainer);
-    const docElement = document.documentElement;
+    const {
+      iframeContainerMeasurements,
+      iframeContentMeasurements
+    } = getEditModeMeasurements(iframeContainer, editModeBoundsContainer, root);
 
     // We have to be careful not to perform any of the operations below unless the values are
     // actually changing, otherwise they will trigger our mutation observer in at least Firefox
@@ -99,25 +144,27 @@ export default editModeZIndex => {
       iframeContainerStyle.zIndex = newZIndex;
     }
 
-    const newTop = Math.round(-offsetRect.top) + 'px';
+    const newTop = Math.round(iframeContainerMeasurements.top) + 'px';
     if (iframeContainerStyle.top !== newTop) {
       iframeContainerStyle.top = newTop;
     }
 
-    const newLeft = Math.round(-offsetRect.left) + 'px';
+    const newLeft = Math.round(iframeContainerMeasurements.left) + 'px';
     if (iframeContainerStyle.left !== newLeft) {
       iframeContainerStyle.left = newLeft;
     }
 
-    const newRight = Math.round(offsetRect.left + offsetRect.width - docElement.offsetWidth) + 'px';
+    const newRight = Math.round(iframeContainerMeasurements.right) + 'px';
     if (iframeContainerStyle.right !== newRight) {
       iframeContainerStyle.right = newRight;
     }
 
-    const newBottom = Math.round(offsetRect.top + offsetRect.height - docElement.offsetHeight) + 'px';
+    const newBottom = Math.round(iframeContainerMeasurements.bottom) + 'px';
     if (iframeContainerStyle.bottom !== newBottom) {
       iframeContainerStyle.bottom = newBottom;
     }
+
+    return iframeContentMeasurements;
   };
 
   const updateDomForNormalMode = () => {
@@ -135,10 +182,8 @@ export default editModeZIndex => {
   // content position inside the iframe. This is only necessary when we're in edit mode.
   const layoutObserver = new LayoutObserver(() => {
     logger.log('UI mutation observed');
-    updateDomForEditMode();
     if (child) {
-      const iframeContentRect = getIframeContentRect();
-      child.setContentRect(iframeContentRect);
+      child.setContentRect(updateDomForEditMode());
     }
   });
 
@@ -159,9 +204,9 @@ export default editModeZIndex => {
     },
     editModeEntered() {
       logger.log('Entering edit mode');
-      updateDomForEditMode();
+      const iframeContentRect = updateDomForEditMode();
       layoutObserver.observe();
-      return getIframeContentRect();
+      return iframeContentRect;
     },
     editModeExited() {
       logger.log('Exiting edit mode');

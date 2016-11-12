@@ -34,71 +34,39 @@ addStylesToPage(STYLES);
 const getEditModeMeasurements = (iframeContainer, boundsContainer, root) => {
   const offsetParent = iframeContainer.offsetParent;
   const offsetParentStyle = getComputedStyle(offsetParent);
-  const editModeBoundsContainerRect = boundsContainer.getBoundingClientRect();
+  const boundsContainerRect = boundsContainer.getBoundingClientRect();
   const rootRect = root.getBoundingClientRect();
-  const editModeBoundsContainerStyle = getComputedStyle(boundsContainer);
+  const boundsContainerStyle = getComputedStyle(boundsContainer);
   const offsetParentRect = offsetParent.getBoundingClientRect();
 
   const iframeContainerMeasurements = {
     top:
-      -(
-        boundsContainer.scrollTop +
-        (
-          offsetParentRect.top -
-          editModeBoundsContainerRect.top -
-          parseFloat(editModeBoundsContainerStyle.borderTopWidth)
-        ) +
-        parseFloat(offsetParentStyle.borderTopWidth)
-      ),
+      parseFloat(offsetParentStyle.borderTopWidth) +
+      (offsetParentRect.top - boundsContainerRect.top) -
+      parseFloat(boundsContainerStyle.borderTopWidth),
     left:
-      -(
-        boundsContainer.scrollLeft +
-        (
-          offsetParentRect.left -
-          editModeBoundsContainerRect.left -
-          parseFloat(editModeBoundsContainerStyle.borderLeftWidth)
-        ) +
-        parseFloat(offsetParentStyle.borderLeftWidth)
-      ),
+      parseFloat(offsetParentStyle.borderLeftWidth) +
+      (offsetParentRect.left - boundsContainerRect.left) -
+      parseFloat(boundsContainerStyle.borderLeftWidth),
     right:
-      -(
-        boundsContainer.offsetWidth +
-        boundsContainer.scrollLeft -
-        (
-          offsetParentRect.right -
-          editModeBoundsContainerRect.left -
-          parseFloat(editModeBoundsContainerStyle.borderRightWidth)
-        ) +
-        parseFloat(offsetParentStyle.borderRightWidth)
-      ),
+      parseFloat(offsetParentStyle.borderRightWidth) +
+      (boundsContainerRect.right - offsetParentRect.right) -
+      parseFloat(boundsContainerStyle.borderRightWidth),
     bottom:
-      -(
-        boundsContainer.offsetHeight -
-        boundsContainer.scrollTop -
-        (
-          offsetParentRect.bottom -
-          editModeBoundsContainerRect.top -
-          parseFloat(editModeBoundsContainerStyle.borderBottomWidth)
-        ) +
-        parseFloat(offsetParentStyle.borderBottomWidth)
-      )
+      parseFloat(offsetParentStyle.borderBottomWidth) +
+      (boundsContainerRect.bottom - offsetParentRect.bottom) -
+      parseFloat(boundsContainerStyle.borderBottomWidth)
   };
 
   const iframeContentMeasurements = {
     top:
-      boundsContainer.scrollTop +
-      (
-        rootRect.top -
-        editModeBoundsContainerRect.top -
-        parseFloat(editModeBoundsContainerStyle.borderTopWidth)
-      ),
+      rootRect.top -
+      boundsContainerRect.top -
+      parseFloat(boundsContainerStyle.borderTopWidth),
     left:
-      boundsContainer.scrollLeft +
-      (
-        rootRect.left -
-        editModeBoundsContainerRect.left -
-        parseFloat(editModeBoundsContainerStyle.borderLeftWidth)
-      ),
+      rootRect.left -
+      boundsContainerRect.left -
+      parseFloat(boundsContainerStyle.borderLeftWidth),
     width: root.clientWidth
   };
 
@@ -129,11 +97,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
 
     // We have to be careful not to perform any of the operations below unless the values are
     // actually changing, otherwise they will trigger our mutation observer in at least Firefox
-    // which causes an infinite loop. Some browsers, like Firefox, also do some rounding internally
-    // (to the tenth of a pixel) so when we set a value of, say, "1.74939939057px", it's rounded
-    // internally to "1.7px". Our mutation observe is triggered which brings us back into this
-    // function and because "1.74939939057px" does not match "1.7px", we attempt to set the style
-    // again, which continues the cycle, causing an infinite loop.
+    // which causes an infinite loop.
 
     if (!root.classList.contains('editMode')) {
       root.classList.add('editMode');
@@ -144,25 +108,17 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       iframeContainerStyle.zIndex = newZIndex;
     }
 
-    const newTop = Math.round(iframeContainerMeasurements.top) + 'px';
-    if (iframeContainerStyle.top !== newTop) {
-      iframeContainerStyle.top = newTop;
-    }
-
-    const newLeft = Math.round(iframeContainerMeasurements.left) + 'px';
-    if (iframeContainerStyle.left !== newLeft) {
-      iframeContainerStyle.left = newLeft;
-    }
-
-    const newRight = Math.round(iframeContainerMeasurements.right) + 'px';
-    if (iframeContainerStyle.right !== newRight) {
-      iframeContainerStyle.right = newRight;
-    }
-
-    const newBottom = Math.round(iframeContainerMeasurements.bottom) + 'px';
-    if (iframeContainerStyle.bottom !== newBottom) {
-      iframeContainerStyle.bottom = newBottom;
-    }
+    Object.keys(iframeContainerMeasurements).forEach(side => {
+      // Some browsers, like Firefox, do some rounding internally (to the tenth of a pixel) so
+      // when we set a value of, say, "1.74939939057px", it's rounded internally to "1.7px".
+      // Our mutation observer is triggered which brings us back into this function and because
+      // "1.74939939057px" does not match "1.7px", we attempt to set the style again, which
+      // continues the cycle, causing an infinite loop.
+      const newMeasurement = Math.round(-iframeContainerMeasurements[side]) + 'px';
+      if (iframeContainerStyle[side] !== newMeasurement) {
+        iframeContainerStyle[side] = newMeasurement;
+      }
+    });
 
     return iframeContentMeasurements;
   };

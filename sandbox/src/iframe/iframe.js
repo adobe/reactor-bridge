@@ -23,6 +23,10 @@ var animateSlide = function(element) {
 
 document.addEventListener('DOMContentLoaded', function() {
   animateSlide(document.getElementById('animatedBox'));
+
+  document.querySelector('button').addEventListener('click', () => {
+    window.extensionBridge.openCodeEditor();
+  });
 });
 
 // setTimeout(function() {

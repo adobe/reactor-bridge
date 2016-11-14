@@ -103,14 +103,27 @@ export const loadIframe = options => new Promise((resolve, reject) => {
   const initComplete = new Promise(resolve => resolveInitComplete = resolve);
   initComplete.then(() => logger.log('Init complete.'));
 
+  const createOpenSharedViewProxy = openSharedViewFn => {
+    return (...args) => {
+      frameboyant.setExitEditModeOnFocus(false);
+      const promise = openSharedViewFn(...args);
+
+      promise.then(() => {
+        frameboyant.setExitEditModeOnFocus(true);
+      });
+
+      return promise;
+    }
+  };
+
   PenPal.connectToChild({
     url,
     appendTo: frameboyant.iframeContainer,
     methods: {
-      openCodeEditor,
-      openRegexTester,
-      openDataElementSelector,
-      openCssSelector,
+      openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
+      openRegexTester: createOpenSharedViewProxy(openRegexTester),
+      openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
+      openCssSelector: createOpenSharedViewProxy(openCssSelector),
       editModeEntered: () => {
         editModeEntered();
         return frameboyant.editModeEntered();

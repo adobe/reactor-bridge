@@ -80,6 +80,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
   logger.log('Initializing an iframe');
 
   let child;
+  let exitEditModeOnFocus = true;
 
   const root = document.createElement('div');
   root.classList.add('frameboyantRoot');
@@ -143,13 +144,13 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
     }
   });
 
-  document.addEventListener('focus', event => {
+  const handleFocus = event => {
     // In at least IE 11, if something in the iframe gains focus, we'll get an event with iframe
     // as the target.
-    if (child && event.target !== child.iframe) {
+    if (exitEditModeOnFocus && child && event.target !== child.iframe) {
       child.exitEditMode();
     }
-  }, true);
+  };
 
   return {
     root,
@@ -162,11 +163,13 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       logger.log('Entering edit mode');
       const iframeContentRect = updateDomForEditMode();
       layoutObserver.observe();
+      document.addEventListener('focus', handleFocus, true);
       return iframeContentRect;
     },
     editModeExited() {
       logger.log('Exiting edit mode');
       layoutObserver.disconnect();
+      document.removeEventListener('focus', handleFocus, true);
       updateDomForNormalMode();
     },
     setIframeHeight(height) {
@@ -175,10 +178,14 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
     },
     destroy() {
       layoutObserver.disconnect();
+      document.removeEventListener('focus', handleFocus, true);
 
       if (root.parentNode) {
         root.parentNode.removeChild(root);
       }
+    },
+    setExitEditModeOnFocus(value) {
+      exitEditModeOnFocus = value;
     }
   };
 };

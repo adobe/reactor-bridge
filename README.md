@@ -1,16 +1,14 @@
 # extension-support-bridge
 [![Build Status][status-image]][status-url] [![NPM version][npm-image]][npm-url] [![NPM Dependencies][npm-dependencies-image]][npm-dependencies-url]
 
-This project provides classes and gulp tasks used by reactor project. 
+This project is a communication layer between Lens and extension views. The layer contains three different parts:
 
-# Building IFrame Utils files
+* **Parent (lib/parent.js):** This is the portion of the communication layer that Lens uses. Lens uses this by importing it directly:
 
-To build the files that are used in the turbine extension views, run `npm run build` from the command line within your project's directory. The bundle files will be placed in the `dist` folder.
+  `import { loadIframe } from '@reactor/extension-support-bridge';`
 
-The bundle file is containing:
-* Iframe communication APIs for building rules and data elements.
-* [frameboyant](https://git.corp.adobe.com/reactor/frameboyant)
-* [iframe-resizer](https://github.com/davidjbradshaw/iframe-resizer)
+* **Child (dist/extensionbridge-child.js):** This is the portion of the communication layer that extension views use, though extension views don't load it directly (see Child Loader). This is hosted by Lens which means it may be different based on the environment. This is important since it needs to be compatible with the Parent that is being used by Lens in the same environment.
+* **Child Loader (dist/extensionbridge.js):** This loads Child. Child Loader will be loaded by extensions via a `script` tag. Extensions will always load the same Child Loader regardless of the environment they are running in. Child Loader then loads the environment-specific Child.
 
 [status-url]: https://dtm-builder.ut1.mcps.adobe.net/job/extension-support-bridge
 [status-image]: https://dtm-builder.ut1.mcps.adobe.net/buildStatus/icon?job=extension-support-bridge

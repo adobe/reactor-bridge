@@ -67,13 +67,7 @@ module.exports = (options) => {
   });
 
   const buildChildPromise = new Promise((resolve, reject) => {
-    const webpackOutputHandler = createWebpackOutputHandler(err => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve();
-      }
-    });
+    const webpackOutputHandler = createWebpackOutputHandler(resolve, reject);
 
     if (options.watch) {
       childCompiler.watch({}, webpackOutputHandler);

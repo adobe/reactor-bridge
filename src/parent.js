@@ -106,7 +106,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
   const createOpenSharedViewProxy = openSharedViewFn => {
     return (...args) => {
       frameboyant.setExitEditModeOnFocus(false);
-      const promise = openSharedViewFn(...args);
+      const promise = Promise.resolve(openSharedViewFn(...args));
 
       promise.then(() => {
         frameboyant.setExitEditModeOnFocus(true);

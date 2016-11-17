@@ -48,12 +48,7 @@ PenPal.connectToParent({
   Frameboyant.setParent(parent);
 });
 
-// document.addEventListener("DOMContentLoaded", () => parent.domReady());
-
-// We can't do "export default" here because webpack would set window.extensionBridge.default
-// instead of window.extensionBridge.
-// https://github.com/webpack/webpack/issues/706
-module.exports = {
+const extensionBridge = {
   openCodeEditor: wrapOpenSharedViewMethod('openCodeEditor', 'code editor'),
   openDataElementSelector: wrapOpenSharedViewMethod('openDataElementSelector', 'data element selector'),
   openCssSelector: wrapOpenSharedViewMethod('openCssSelector', 'CSS selector'),
@@ -70,3 +65,15 @@ module.exports = {
     Logger.enabled = value;
   }
 };
+
+const executeQueuedCall = (call) => {
+  extensionBridge[call.methodName](...call.args);
+};
+
+const callQueue = window.extensionBridge._callQueue;
+
+while (callQueue.length) {
+  executeQueuedCall(callQueue.shift());
+}
+
+callQueue.push = executeQueuedCall;

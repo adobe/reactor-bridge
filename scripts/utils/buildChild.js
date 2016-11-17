@@ -54,7 +54,14 @@ var childCompiler = webpack({
   }
 });
 
-module.exports = (options) => {
+/**
+ * Builds the Child portion of extension bridge.
+ * @param [options]
+ * @param [options.watch=false] Whether files should be watched for changes. When changes are
+ * detected, Child will be rebuilt.
+ * @returns {Promise} A promise which will be resolved after the initial build.
+ */
+module.exports = (options = {}) => {
   const buildChildLoaderPromise = new Promise((resolve, reject) => {
     buildChildLoader(resolve, reject);
 

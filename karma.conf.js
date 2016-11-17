@@ -2,23 +2,16 @@ const webpack = require('webpack');
 const http = require('http');
 const connect = require('connect');
 const serveStatic = require('serve-static');
+const buildChild = require('./scripts/utils/buildChild');
 
 /**
- * We're going to server fixtures (our mock extension views) from a port that's different from
+ * We're going to serve fixtures (our mock extension views) from a port that's different from
  * the tests running on Karma. This is so we can test that cross-domain communication is
  * functioning as expected. This is important because in production extension views will be
  * served from a different domain than Lens.
  */
 const serveFixtures = () => {
-  webpack(require('./webpack.child.config')).watch({}, (err, stats) => {
-    if (err) {
-      console.error(err);
-    } else {
-      console.log(stats.toString({
-        chunks: false
-      }));
-    }
-  });
+  buildChild({ watch: true });
 
   const childIframes = connect()
     .use(serveStatic('dist'))
@@ -37,8 +30,11 @@ module.exports = function(config) {
       // Re-run tests when fixtures change.
       { pattern: 'src/__tests__/fixtures/*', watched: true, included: false, served: false },
       // Re-run tests when dist files change (the fixtures use these).
-      { pattern: 'dist/*', watched: true, included: false, served: false }
+      { pattern: 'dist/*', watched: true, included: false, served: true },
     ],
+    proxies: {
+      '/extensionbridge/': '/base/dist/'
+    },
     preprocessors: {
       'src/__tests__/*.test.js': ['webpack']
     },

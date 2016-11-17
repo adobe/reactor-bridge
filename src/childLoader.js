@@ -16,6 +16,15 @@
     _callQueue: []
   };
 
+  var anchor = document.createElement('a');
+  anchor.href = document.referrer;
+
+  var childURL = anchor.protocol +
+    '//' +
+    anchor.hostname +
+    (anchor.port ? ':' + anchor.port : '') +
+    childPath;
+
   [
     'openCodeEditor',
     'openDataElementSelector',
@@ -34,8 +43,8 @@
 
   var script = document.createElement('script');
   script.async = true;
-  script.src = document.referrer + childPath;
+  script.src = childURL;
 
   var firstDocScript = document.getElementsByTagName('script')[0];
   firstDocScript.parentNode.insertBefore(script, firstDocScript);
-})(window, document, 'extensionbridge/extensionbridge-child.js');
+})(window, document, '/extensionbridge/extensionbridge-child.js');

@@ -13,7 +13,7 @@ const STYLES = `
       When something in the iframe changes the document height, we send a message to the parent
       window and the window resizes the iframe accordingly. This process is asynchronous,
       however, and while the message is being communicated to the parent window, a vertical
-      scrollbar appears. This prevents the scrollbar for showing up.
+      scrollbar appears. This prevents the scrollbar from showing up.
     */
     overflow: hidden !important;
   }
@@ -27,23 +27,23 @@ const STYLES = `
   }
   
   body {
-    /* 
-       When in edit mode, we'll be giving body some margin. If the children of body also have 
-       margin, this can cause their margins to "collapse" into the body's margin. 
-       https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing.
-       Using padding of 0.1px prevents margins from collapsing while (hopefully) not causing any
-       problematic side-effects.
-       
-       We don't use !important here because it's likely that an extension will legitimately want
-       to override padding which is fine though if they set a padding of 0 then margins may
-       collapse.
-    */
-    padding: 0.1px;
-    
     margin: 0 !important;
     display: block !important;
     position: relative !important;
     height: 100% !important;
+  }
+  
+  /* 
+    When in edit mode, we'll be giving body some margin. If the children of body also have 
+    margin, this can cause their margins to "collapse" into the body's margin. 
+    https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing.
+    This hack prevents margins from collapsing while (hopefully) not causing any
+    problematic side-effects.
+  */
+  body:before,
+  body:after {
+    content: ' ';
+    display: table;
   }
 
   /*
@@ -51,7 +51,7 @@ const STYLES = `
     toggling, the iframe gets shifted around the parent document at times causing the user to
     see the iframe's content moving around the page. To prevent this from happening, we'll hide
     the body which hopefully will be a better form of flicker. We tried setting visibility to 
-    hidden, but it appeared to caus issues with React synthetic events (mousedown, blur, etc)
+    hidden, but it appeared to cause issues with React synthetic events (mousedown, blur, etc)
     after it was unhidden. Tweaking opacity is our best attempt at hiding the content 
     without causing problems.
   */
@@ -64,12 +64,14 @@ let parent;
 let editMode = false;
 
 const handleMouseDown = event => {
-  if (editMode) {
-    if (event.target === document.documentElement) {
-      exitEditMode();
+  if (event.button === 0) { // main mouse button
+    if (editMode) {
+      if (event.target === document.documentElement) {
+        exitEditMode();
+      }
+    } else {
+      enterEditMode();
     }
-  } else {
-    enterEditMode();
   }
 };
 

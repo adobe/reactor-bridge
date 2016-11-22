@@ -19,6 +19,7 @@ body {
   background-color: white;
   position: relative;
   margin: 0 100px;
+  padding: 20px;
 }
 
 #ruleComponent.loading #iframeHolder {

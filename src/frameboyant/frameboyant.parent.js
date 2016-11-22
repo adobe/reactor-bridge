@@ -32,13 +32,38 @@ const STYLES = `
 addStylesToPage(STYLES);
 
 const getEditModeMeasurements = (iframeContainer, boundsContainer, root) => {
+  // Typically, boundsContainer contains offsetParent which contains root which contains
+  // iframeContainer which contains iframe.
+
+  // boundsContainer is the container that should be filled by the iframe while in edit mode.
+
+  // offsetParent is the first ancestor of iframeContainer that has non-static positioning. When
+  // iframeContainer is set to position:absolute, its top, right, bottom, and left positions will
+  // be based on that. In other words, if iframeContainer has top: 0, right: 0, bottom: 0, left: 0,
+  // it would be the same size as the offsetParent.
+
+  // root is the parent-most container that frameboyant creates and controls. Its positioning will
+  // always be static and its height will match the height of the iframe's content. In other words,
+  // its height will not change when toggling edit mode.
+
+  // iframeContainer contains the iframe and is toggled between absolute and static positioning
+  // when going in and out of edit mode. When in edit mode, it will fill up the bounds container
+  // and when not in edit mode it will fill up the root container. This container is only necessary
+  // because browsers don't allow sizing an iframe using top, right, bottom, and left measurements.
+  // Instead, we size the iframeContainer and set the iframe to 100% width and 100% height.
+
+  // iframe The iframe. Since the iframe is 100% width and 100% height of iframeContainer, we
+  // don't directly manipulate its positioning/sizing.
+  const boundsContainerStyle = getComputedStyle(boundsContainer);
+  const boundsContainerRect = boundsContainer.getBoundingClientRect();
   const offsetParent = iframeContainer.offsetParent;
   const offsetParentStyle = getComputedStyle(offsetParent);
-  const boundsContainerRect = boundsContainer.getBoundingClientRect();
-  const rootRect = root.getBoundingClientRect();
-  const boundsContainerStyle = getComputedStyle(boundsContainer);
   const offsetParentRect = offsetParent.getBoundingClientRect();
+  const rootRect = root.getBoundingClientRect();
 
+  // Find the top, left, right, and bottom styles that would need to be applied to the iframe
+  // container in order to make the iframe cover the bounds container. The iframe should cover
+  // everything in the bounds container except for the border.
   const iframeContainerMeasurements = {
     top:
       parseFloat(offsetParentStyle.borderTopWidth) +
@@ -58,6 +83,8 @@ const getEditModeMeasurements = (iframeContainer, boundsContainer, root) => {
       parseFloat(boundsContainerStyle.borderBottomWidth)
   };
 
+  // Find the dimensions where the iframe's content should be. This will be sent into the iframe
+  // and applied to the iframe's body.
   const iframeContentMeasurements = {
     top:
       rootRect.top -

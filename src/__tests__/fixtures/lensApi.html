@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Iframe</title>
+    <script src="extensionBridge.js"></script>
+    <script>
+      extensionBridge.register({
+        init: function(options) {
+          return;
+        },
+        validate: function() {
+          // We abuse validate() for our testing purposes.
+          return Promise.all([
+            new Promise(function(resolve) {
+              extensionBridge.openCodeEditor('code editor', resolve);
+            }),
+            new Promise(function(resolve) {
+              extensionBridge.openRegexTester('regex tester', resolve);
+            }),
+            new Promise(function(resolve) {
+              extensionBridge.openDataElementSelector('data element selector', resolve);
+            }),
+            new Promise(function(resolve) {
+              extensionBridge.openCssSelector('css selector', resolve);
+            })
+          ]);
+        },
+        getSettings: function() {
+          return {};
+        }
+      });
+    </script>
+  </head>
+  <body>
+    Iframe
+  </body>
+</html>

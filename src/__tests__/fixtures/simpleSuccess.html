@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Iframe</title>
+    <script src="extensionBridge.js"></script>
+    <script>
+      extensionBridge.register({
+        init: function(options) {},
+        validate: function() { return true; },
+        getSettings: function() { return {}; }
+      });
+    </script>
+  </head>
+  <body>
+    Iframe
+  </body>
+</html>

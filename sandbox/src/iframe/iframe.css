@@ -1,0 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
+#animatedBox {
+  background-color: rgba(0, 0, 255, .4);
+  width: 300px;
+  /*
+    Prevent margin collapsing.
+    https://css-tricks.com/what-you-should-know-about-collapsing-margins/
+  */
+  padding: 0.1px;
+}

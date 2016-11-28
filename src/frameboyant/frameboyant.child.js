@@ -145,7 +145,17 @@ document.addEventListener('focus', enterEditMode, true);
 addStylesToPage(STYLES);
 
 export default {
+  /**
+   * Provides frameboyant with an API object for managing the parent window.
+   * @param value
+   */
   setParent,
+  /**
+   * Provides top, left, and width for where the content should be oriented inside the iframe.
+   */
   setContentRect,
+  /**
+   * Called when the parent window wishes to exit edit mode.
+   */
   exitEditMode
 };

@@ -182,10 +182,18 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
   return {
     root,
     iframeContainer,
+    /**
+     * Provides frameboyant with an API object for managing the child iframe.
+     * @param value
+     */
     setChild(value) {
       child = value;
       child.iframe.classList.add('frameboyantIframe');
     },
+    /**
+     * This should be called when the iframe has entered edit mode. The parent window will also
+     * enter edit mode.
+     */
     editModeEntered() {
       logger.log('Entering edit mode');
       const iframeContentRect = updateDomForEditMode();
@@ -193,16 +201,35 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       document.addEventListener('focus', handleFocus, true);
       return iframeContentRect;
     },
+    /**
+     * This should be called when the iframe has exited edit mode. The parent window will also exit
+     * edit mode
+     */
     editModeExited() {
       logger.log('Exiting edit mode');
       layoutObserver.disconnect();
       document.removeEventListener('focus', handleFocus, true);
       updateDomForNormalMode();
     },
+    /**
+     * Sets the iframe's height.
+     * @param height
+     */
     setIframeHeight(height) {
       logger.log('Setting iframe height', height);
       root.style.height = height + 'px';
     },
+    /**
+     * When exitEditModeOnFocus is set to true, edit mode will be exited when an element outside
+     * the iframe gains focus.
+     * @param value
+     */
+    setExitEditModeOnFocus(value) {
+      exitEditModeOnFocus = value;
+    },
+    /**
+     * Removes event listeners and removes associated elements from the DOM.
+     */
     destroy() {
       layoutObserver.disconnect();
       document.removeEventListener('focus', handleFocus, true);
@@ -210,9 +237,6 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       if (root.parentNode) {
         root.parentNode.removeChild(root);
       }
-    },
-    setExitEditModeOnFocus(value) {
-      exitEditModeOnFocus = value;
     }
   };
 };

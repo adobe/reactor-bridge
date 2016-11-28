@@ -28,6 +28,11 @@ const wrapExtensionViewMethod = methodName => (...args) => {
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
   const callback = args.pop();
 
+  if (!callback) {
+    console.error('A callback is required when opening a shared view.');
+    return;
+  }
+
   if (parent[methodName]) {
     parent[methodName](...args).then(callback);
   } else {

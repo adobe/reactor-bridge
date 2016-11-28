@@ -60,7 +60,7 @@ describe('parent', () => {
     });
   });
 
-  it('absolute positions and sizes the iframe when in edit mode', done => {
+  it('positions and sizes iframe when toggling edit mode', done => {
     const boundsContainer = document.createElement('div');
     boundsContainer.style.margin = '10px';
     boundsContainer.style.padding = '20px';
@@ -83,7 +83,7 @@ describe('parent', () => {
       child.iframe.style.border = '0';
 
       // We abuse validate() for our testing purposes to trigger edit mode.
-      child.validate().then(function() {
+      child.validate().then(() => {
         const iframeContainer = child.rootNode.querySelector('.frameboyantIframeContainer');
         const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
         const boundsContainerRect = boundsContainer.getBoundingClientRect();
@@ -98,14 +98,27 @@ describe('parent', () => {
         expect(iframeRect.width).toBe(boundsContainerRect.width - 10);
         expect(iframeRect.height).toBe(boundsContainerRect.height - 10);
 
-        // We abuse validate() for our testing purposes to get the iframe body styles.
-        child.getSettings().then(function(bodyStyles) {
-          expect(parseInt(bodyStyles.marginTop)).toBe(25);
-          expect(parseInt(bodyStyles.marginLeft)).toBe(25);
-          expect(parseInt(bodyStyles.width)).toBe(490);
-          done();
-        });
-      });
+        // We abuse getSettings() for our testing purposes to get the iframe body styles.
+        return child.getSettings();
+      }).then(bodyStyles => {
+        expect(parseInt(bodyStyles.marginTop)).toBe(25);
+        expect(parseInt(bodyStyles.marginLeft)).toBe(25);
+        expect(parseInt(bodyStyles.width)).toBe(490);
+
+        return child.exitEditMode();
+      }).then(() => {
+        const iframeContainer = child.rootNode.querySelector('.frameboyantIframeContainer');
+        const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
+        const boundsContainerRect = boundsContainer.getBoundingClientRect();
+        const iframeRect = child.iframe.getBoundingClientRect();
+
+        expect(iframeContainerComputedStyle.position).toBe('static');
+        expect(iframeRect.top).toBe(boundsContainerRect.top + 30);
+        expect(iframeRect.left).toBe(boundsContainerRect.left + 30);
+        expect(iframeRect.width).toBe(boundsContainerRect.width - 60);
+        expect(iframeRect.height).toBeLessThan(boundsContainerRect.height);
+        done();
+      })
     });
   });
 

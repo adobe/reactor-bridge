@@ -24,6 +24,7 @@ export const ERROR_CODES = {
  * needed in order for edit mode to work properly.
  * @property {Function} validate Validates the extension view.
  * @property {Function} getSettings Retrieves settings from the extension view.
+ * @property {Function} exitEditMode Force the iframe to exit edit mode.
  * @property {Function} destroy Removes the iframe from its container and cleans up any supporting
  * utilities.
  */
@@ -152,6 +153,7 @@ export const loadIframe = options => new Promise((resolve, reject) => {
       init: child.init,
       validate: child.validate,
       getSettings: child.getSettings,
+      exitEditMode: child.exitEditMode,
       destroy: frameboyant.destroy
     };
 

@@ -27,6 +27,11 @@ const STYLES = `
   }
   
   body {
+    /*
+      border-box sizing is important to get body sizing right when the extension has applied
+      padding to the body element.
+    */
+    box-sizing: border-box !important;
     margin: 0 !important;
     display: block !important;
     position: relative !important;

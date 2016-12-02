@@ -9,7 +9,7 @@ const once = require('once');
 const createWebpackOutputHandler = require('./createWebpackOutputHandler');
 
 const childLoaderInputPath = path.resolve(__dirname, '../../src/childLoader.js');
-const childLoaderOutputPath = path.resolve(__dirname, '../../dist/extensionbridge.js');
+const childLoaderOutputPath = path.resolve(__dirname, '../../dist/extensionbridge.min.js');
 const childInputPath = path.resolve(__dirname, '../../src/child.js');
 const childOutputPath = path.resolve(__dirname, '../../dist/extensionbridge-child.js');
 

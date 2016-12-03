@@ -107,6 +107,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
   logger.log('Initializing an iframe');
 
   let child;
+  let iframe;
   let exitEditModeOnFocus = true;
 
   const root = document.createElement('div');
@@ -174,7 +175,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
   const handleFocus = event => {
     // In at least IE 11, if something in the iframe gains focus, we'll get an event with iframe
     // as the target.
-    if (exitEditModeOnFocus && child && event.target !== child.iframe) {
+    if (exitEditModeOnFocus && child && event.target !== iframe) {
       child.exitEditMode();
     }
   };
@@ -188,8 +189,17 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
      */
     setChild(value) {
       child = value;
-      child.iframe.classList.add('frameboyantIframe');
     },
+
+    /**
+     * Provides frameboyant with the child iframe.
+     * @param value
+     */
+    setIframe(value) {
+      iframe = value;
+      iframe.classList.add('frameboyantIframe');
+    },
+
     /**
      * This should be called when the iframe has entered edit mode. The parent window will also
      * enter edit mode.
@@ -201,6 +211,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       document.addEventListener('focus', handleFocus, true);
       return iframeContentRect;
     },
+
     /**
      * This should be called when the iframe has exited edit mode. The parent window will also exit
      * edit mode
@@ -211,6 +222,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       document.removeEventListener('focus', handleFocus, true);
       updateDomForNormalMode();
     },
+
     /**
      * Sets the iframe's height.
      * @param height
@@ -219,6 +231,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
       logger.log('Setting iframe height', height);
       root.style.height = height + 'px';
     },
+
     /**
      * When exitEditModeOnFocus is set to true, edit mode will be exited when an element outside
      * the iframe gains focus.
@@ -227,6 +240,7 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
     setExitEditModeOnFocus(value) {
       exitEditModeOnFocus = value;
     },
+
     /**
      * Removes event listeners and removes associated elements from the DOM.
      */

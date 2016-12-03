@@ -2,58 +2,67 @@ import { loadIframe, ERROR_CODES } from '../parent';
 
 describe('parent', () => {
   it('loads an iframe and provides API', done => {
-    loadIframe({
+    const bridge = loadIframe({
       url: 'http://localhost:9800/simpleSuccess.html'
-    }).then(child => {
-      expect(child.iframe).toEqual(jasmine.any(HTMLIFrameElement));
-      expect(child.rootNode).toEqual(jasmine.any(HTMLDivElement));
+    });
+
+    expect(bridge.iframe).toEqual(jasmine.any(HTMLIFrameElement));
+    expect(bridge.rootNode).toEqual(jasmine.any(HTMLDivElement));
+    expect(bridge.destroy).toEqual(jasmine.any(Function));
+
+    bridge.promise.then(child => {
       expect(child.init).toEqual(jasmine.any(Function));
       expect(child.validate).toEqual(jasmine.any(Function));
       expect(child.getSettings).toEqual(jasmine.any(Function));
-      expect(child.destroy).toEqual(jasmine.any(Function));
+      bridge.destroy();
       done();
     });
   });
 
-  it('loads an iframe into specified container', done => {
+  it('loads an iframe into specified container', () => {
     const container = document.createElement('div');
     document.body.appendChild(container);
 
-    loadIframe({
+    const bridge = loadIframe({
       url: 'http://localhost:9800/simpleSuccess.html',
       container
-    }).then(child => {
-      expect(container.querySelector('iframe')).toBe(child.iframe);
-      done();
     });
+
+    expect(container.querySelector('iframe')).toBe(bridge.iframe);
+    bridge.destroy();
   });
 
-  it('sets sandbox attribute on iframe', done => {
-    loadIframe({
+  it('sets sandbox attribute on iframe', () => {
+    const bridge = loadIframe({
       url: 'http://localhost:9800/simpleSuccess.html',
-    }).then(child => {
-      expect(child.iframe.getAttribute('sandbox')).toBe('allow-scripts');
-      done();
     });
+
+    expect(bridge.iframe.getAttribute('sandbox'))
+      .toBe('allow-same-origin allow-scripts allow-popups');
+    bridge.destroy();
   });
 
   it('sizes the frameboyant root to the iframe content height during initialization', done => {
-    loadIframe({
+    const bridge = loadIframe({
       url: 'http://localhost:9800/simpleSuccess.html',
-    }).then(child => {
-      expect(parseFloat(child.rootNode.style.height)).toBeGreaterThan(0);
+    });
+
+    bridge.promise.then(child => {
+      expect(parseFloat(bridge.rootNode.style.height)).toBeGreaterThan(0);
       done();
     });
   });
 
   it('sizes the frameboyant root to the iframe content height after initialization', done => {
-    loadIframe({
+    const bridge = loadIframe({
       url: 'http://localhost:9800/resize.html',
-    }).then(child => {
-      var beforeSize = parseFloat(child.rootNode.style.height);
+    });
+
+    bridge.promise.then(child => {
+      var beforeSize = parseFloat(bridge.rootNode.style.height);
       // We abuse validate() for our testing purposes.
       child.validate().then(function() {
-        var afterSize = parseFloat(child.rootNode.style.height);
+        var afterSize = parseFloat(bridge.rootNode.style.height);
         expect(beforeSize + 100).toEqual(afterSize);
         done();
       });
@@ -75,19 +84,19 @@ describe('parent', () => {
     relativelyPositionedParent.style.border = '1px solid blue';
     boundsContainer.appendChild(relativelyPositionedParent);
 
-    loadIframe({
+    const bridge = loadIframe({
       url: 'http://localhost:9800/editMode.html',
       container: relativelyPositionedParent,
       editModeBoundsContainer: boundsContainer
-    }).then(child => {
-      child.iframe.style.border = '0';
+    });
 
+    bridge.promise.then(child => {
       // We abuse validate() for our testing purposes to trigger edit mode.
       child.validate().then(() => {
-        const iframeContainer = child.rootNode.querySelector('.frameboyantIframeContainer');
+        const iframeContainer = bridge.rootNode.querySelector('.frameboyantIframeContainer');
         const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
         const boundsContainerRect = boundsContainer.getBoundingClientRect();
-        const iframeRect = child.iframe.getBoundingClientRect();
+        const iframeRect = bridge.iframe.getBoundingClientRect();
 
         expect(iframeContainerComputedStyle.position).toBe('absolute');
 
@@ -107,10 +116,10 @@ describe('parent', () => {
 
         return child.exitEditMode();
       }).then(() => {
-        const iframeContainer = child.rootNode.querySelector('.frameboyantIframeContainer');
+        const iframeContainer = bridge.rootNode.querySelector('.frameboyantIframeContainer');
         const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
         const boundsContainerRect = boundsContainer.getBoundingClientRect();
-        const iframeRect = child.iframe.getBoundingClientRect();
+        const iframeRect = bridge.iframe.getBoundingClientRect();
 
         expect(iframeContainerComputedStyle.position).toBe('static');
         expect(iframeRect.top).toBe(boundsContainerRect.top + 30);
@@ -125,7 +134,7 @@ describe('parent', () => {
   it('proxies extension view API', done => {
     loadIframe({
       url: 'http://localhost:9800/extensionViewApi.html'
-    }).then(child => {
+    }).promise.then(child => {
       Promise.all([
         child.init(),
         child.validate(),
@@ -152,7 +161,7 @@ describe('parent', () => {
       openRegexTester: addResultSuffix,
       openDataElementSelector: addResultSuffix,
       openCssSelector: addResultSuffix
-    }).then(child => {
+    }).promise.then(child => {
       // We abuse validate() for our testing purposes.
       child.validate().then(result => {
         expect(result).toEqual([
@@ -171,7 +180,7 @@ describe('parent', () => {
 
     loadIframe({
       url: 'http://localhost:9800/connectionFailure.html'
-    }).then(child => {
+    }).promise.then(child => {
 
     }, err => {
       expect(err === ERROR_CODES.CONNECTION_TIMEOUT);

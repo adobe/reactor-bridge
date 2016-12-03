@@ -1,4 +1,6 @@
-import { loadIframe } from '../../src/parent';
+import { loadIframe, setDebug } from '../../src/parent';
+
+setDebug(true);
 
 const noop = () => {};
 
@@ -17,7 +19,7 @@ loadIframe({
   editModeExited() {
     document.getElementById('backdrop').classList.remove('editMode');
   }
-}).then(() => {
+}).promise.then(() => {
   document.getElementById('ruleComponent').classList.remove('loading');
 });
 

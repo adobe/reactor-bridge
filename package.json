@@ -32,7 +32,7 @@
     "layout-observer": "^0.1.0",
     "native-promise-only-ponyfill": "^1.0.1",
     "once": "^1.4.0",
-    "penpal": "^1.0.2"
+    "penpal": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",

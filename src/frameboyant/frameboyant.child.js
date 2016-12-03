@@ -160,6 +160,10 @@ export default {
    */
   setContentRect,
   /**
+   * Called when the parent window wishes to enter edit mode.
+   */
+  enterEditMode,
+  /**
    * Called when the parent window wishes to exit edit mode.
    */
   exitEditMode

@@ -122,7 +122,7 @@ const exitEditMode = () => {
   }
 };
 
-const handleUIChange = (() => {
+const handleLayoutChange = (() => {
   let previousObservedHeight = -1;
 
   return () => {
@@ -137,12 +137,14 @@ const handleUIChange = (() => {
   };
 })();
 
-const layoutObserver = new LayoutObserver(handleUIChange);
+const layoutObserver = new LayoutObserver(handleLayoutChange, {
+  throttle: 10
+});
 
 const setParent = once(value => {
   parent = value;
   layoutObserver.observe();
-  handleUIChange(); // Let the parent know about our initial height.
+  handleLayoutChange(); // Let the parent know about our initial height.
 });
 
 document.addEventListener('mousedown', handleMouseDown, true);
@@ -159,6 +161,10 @@ export default {
    * Provides top, left, and width for where the content should be oriented inside the iframe.
    */
   setContentRect,
+  /**
+   * Called when the parent window wishes to enter edit mode.
+   */
+  enterEditMode,
   /**
    * Called when the parent window wishes to exit edit mode.
    */

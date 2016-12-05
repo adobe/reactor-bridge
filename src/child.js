@@ -1,9 +1,9 @@
-import PenPal from 'penpal';
+import Penpal from 'penpal';
 import Promise from 'native-promise-only-ponyfill';
 import Logger from './utils/logger';
 import Frameboyant from './frameboyant/frameboyant.child';
 
-PenPal.Promise = Promise;
+Penpal.Promise = Promise;
 
 const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};
@@ -40,15 +40,16 @@ const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
   }
 };
 
-PenPal.connectToParent({
+Penpal.connectToParent({
   methods: {
     init: wrapExtensionViewMethod('init'),
     validate: wrapExtensionViewMethod('validate'),
     getSettings: wrapExtensionViewMethod('getSettings'),
     setContentRect: Frameboyant.setContentRect,
+    enterEditMode: Frameboyant.enterEditMode,
     exitEditMode: Frameboyant.exitEditMode
   }
-}).then(_parent => {
+}).promise.then(_parent => {
   parent = _parent;
   Frameboyant.setParent(parent);
 });
@@ -66,7 +67,7 @@ const extensionBridge = {
     logger.log('Methods registered by extension.');
   },
   setDebug(value) {
-    PenPal.debug = value;
+    Penpal.debug = value;
     Logger.enabled = value;
   }
 };

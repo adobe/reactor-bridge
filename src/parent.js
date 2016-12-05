@@ -1,4 +1,4 @@
-import PenPal from 'penpal';
+import Penpal from 'penpal';
 import Logger from './utils/logger';
 import Frameboyant from './frameboyant/frameboyant.parent';
 
@@ -16,17 +16,27 @@ export const ERROR_CODES = {
 };
 
 /**
- * An API the consumer will use to call methods on the iframe.
- * @typedef {Object} IframeAPI
+ * An object providing bridge-related API.
+ * @typedef {Object} Bridge
+ * @property {Promise} The promise will be resolved once (1) communication with the iframe has
+ * been established, (2) the iframe has been resized to its content, and (3) the iframe has
+ * acknowledged receiving the initial init() call. The promise will be resolved
+ * with an {IframeAPI} object that will act as the API to use to communicate with the iframe.
  * @property {HTMLIframeElement} iframe The created iframe. You may use this to add classes to the
  * iframe, etc.
- * @property {HTMLElement} iframeContainer A container the iframe sits within. This container is
+ * @property {HTMLElement} rootNode A container the iframe sits within. This container is
  * needed in order for edit mode to work properly.
- * @property {Function} validate Validates the extension view.
- * @property {Function} getSettings Retrieves settings from the extension view.
- * @property {Function} exitEditMode Force the iframe to exit edit mode.
  * @property {Function} destroy Removes the iframe from its container and cleans up any supporting
  * utilities.
+ */
+
+/**
+ * An API the consumer will use to call methods on the iframe.
+ * @typedef {Object} IframeAPI
+ * @property {Function} validate Validates the extension view.
+ * @property {Function} getSettings Retrieves settings from the extension view.
+ * @property {Function} enterEditMode Force the iframe to enter edit mode.
+ * @property {Function} exitEditMode Force the iframe to exit edit mode.
  */
 
 /**
@@ -64,12 +74,9 @@ export const ERROR_CODES = {
  * @param {Function} [options.openCssSelector] The function to call when the extension view requests
  * that the CSS selector should open. The function should return a promise that is resolved
  * with the generated CSS selector.
- * @returns {Promise} The promise will be resolved once (1) communication with the iframe has
- * been established, (2) the iframe has been resized to its content, and (3) the iframe has
- * acknowledged receiving the initial init() call. The promise will be resolved
- * with an {IframeAPI} object that will act as the API to use to communicate with the iframe.
+ * @returns {Bridge}
  */
-export const loadIframe = options => new Promise((resolve, reject) => {
+export const loadIframe = options => {
   const {
     url,
     extensionInitOptions = {},
@@ -86,15 +93,14 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     openCssSelector = noop
   } = options;
 
+  let destroy;
+  let iframe;
+
   const frameboyant = new Frameboyant({
     editModeZIndex,
     editModeBoundsContainer
   });
   container.appendChild(frameboyant.root);
-
-  const connectionTimeoutId = setTimeout(() => {
-    reject(ERROR_CODES.CONNECTION_TIMEOUT);
-  }, connectionTimeoutDuration);
 
   let resolveIframeHeightSet;
   const iframeHeightSet = new Promise(resolve => resolveIframeHeightSet = resolve);
@@ -121,64 +127,88 @@ export const loadIframe = options => new Promise((resolve, reject) => {
     }
   };
 
-  PenPal.connectToChild({
-    url,
-    appendTo: frameboyant.iframeContainer,
-    methods: {
-      openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
-      openRegexTester: createOpenSharedViewProxy(openRegexTester),
-      openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
-      openCssSelector: createOpenSharedViewProxy(openCssSelector),
-      editModeEntered: () => {
-        editModeEntered();
-        return frameboyant.editModeEntered();
-      },
-      editModeExited: () => {
-        editModeExited();
-        frameboyant.editModeExited();
-      },
-      setIframeHeight(...args) {
-        frameboyant.setIframeHeight(...args);
-        resolveIframeHeightSet();
+  const loadPromise = new Promise((resolve, reject) => {
+    const connectionTimeoutId = setTimeout(() => {
+      reject(ERROR_CODES.CONNECTION_TIMEOUT);
+      destroy();
+    }, connectionTimeoutDuration);
+
+    const penpalConnection = Penpal.connectToChild({
+      url,
+      appendTo: frameboyant.iframeContainer,
+      methods: {
+        openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
+        openRegexTester: createOpenSharedViewProxy(openRegexTester),
+        openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
+        openCssSelector: createOpenSharedViewProxy(openCssSelector),
+        editModeEntered: () => {
+          editModeEntered();
+          return frameboyant.editModeEntered();
+        },
+        editModeExited: () => {
+          editModeExited();
+          frameboyant.editModeExited();
+        },
+        setIframeHeight(...args) {
+          frameboyant.setIframeHeight(...args);
+          resolveIframeHeightSet();
+        }
       }
-    }
-  }).then(child => {
-    clearTimeout(connectionTimeoutId);
-
-    child.iframe.setAttribute('sandbox', 'allow-scripts');
-
-    const api = {
-      iframe: child.iframe,
-      rootNode: frameboyant.root,
-      init: child.init,
-      validate: child.validate,
-      getSettings: child.getSettings,
-      exitEditMode: child.exitEditMode,
-      destroy: frameboyant.destroy
-    };
-
-    const renderTimeoutId = setTimeout(() => {
-      reject(ERROR_CODES.RENDER_TIMEOUT);
-    }, renderTimeoutDuration);
-
-    Promise.all([
-      iframeHeightSet,
-      initComplete,
-    ]).then(() => {
-      clearTimeout(renderTimeoutId);
-      resolve(api);
     });
 
-    frameboyant.setChild(child);
-    child.init(extensionInitOptions).then(resolveInitComplete);
+    penpalConnection.promise.then(child => {
+      clearTimeout(connectionTimeoutId);
+
+      const renderTimeoutId = setTimeout(() => {
+        reject(ERROR_CODES.RENDER_TIMEOUT);
+        destroy();
+      }, renderTimeoutDuration);
+
+      frameboyant.setChild(child);
+      child.init(extensionInitOptions).then(resolveInitComplete);
+
+      Promise.all([
+        iframeHeightSet,
+        initComplete,
+      ]).then(() => {
+        clearTimeout(renderTimeoutId);
+        resolve({
+          init: child.init,
+          validate: child.validate,
+          getSettings: child.getSettings,
+          enterEditMode: child.enterEditMode,
+          exitEditMode: child.exitEditMode,
+        });
+      });
+    }, error => {
+      reject(`Connection failed: ${error}`);
+    });
+
+    destroy = () => {
+      reject('Extension bridge destroyed');
+      penpalConnection.destroy();
+      frameboyant.destroy();
+    };
+
+    iframe = penpalConnection.iframe;
   });
-});
+
+  iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups');
+  frameboyant.setIframe(iframe);
+
+  return {
+    promise: loadPromise,
+    iframe,
+    rootNode: frameboyant.root,
+    destroy
+  };
+};
 
 export const setPromise = value => {
   Promise = value;
-  PenPal.Promise = value;
+  Penpal.Promise = value;
 };
 export const setDebug = value => {
-  PenPal.debug = value;
+  Penpal.debug = value;
   Logger.enabled = value;
 };

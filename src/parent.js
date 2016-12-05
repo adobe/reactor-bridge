@@ -17,7 +17,7 @@ export const ERROR_CODES = {
 
 /**
  * An object providing bridge-related API.
- * @typedef {Object} IframeAPI
+ * @typedef {Object} Bridge
  * @property {Promise} The promise will be resolved once (1) communication with the iframe has
  * been established, (2) the iframe has been resized to its content, and (3) the iframe has
  * acknowledged receiving the initial init() call. The promise will be resolved

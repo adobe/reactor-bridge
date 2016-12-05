@@ -163,13 +163,17 @@ export default ({ editModeBoundsContainer, editModeZIndex }) => {
     iframeContainerStyle.removeProperty('bottom');
   };
 
-  // Watch for any UI mutations in the parent window. If any are seen, we need to update the
-  // content position inside the iframe. This is only necessary when we're in edit mode.
-  const layoutObserver = new LayoutObserver(() => {
-    logger.log('UI mutation observed');
+  const handleLayoutChange = () => {
+    logger.log('Layout mutation observed');
     if (child) {
       child.setContentRect(updateDomForEditMode());
     }
+  };
+
+  // Watch for any UI mutations in the parent window. If any are seen, we need to update the
+  // content position inside the iframe. This is only necessary when we're in edit mode.
+  const layoutObserver = new LayoutObserver(handleLayoutChange, {
+    throttle: 10
   });
 
   const handleFocus = event => {

@@ -122,7 +122,7 @@ const exitEditMode = () => {
   }
 };
 
-const handleUIChange = (() => {
+const handleLayoutChange = (() => {
   let previousObservedHeight = -1;
 
   return () => {
@@ -137,12 +137,14 @@ const handleUIChange = (() => {
   };
 })();
 
-const layoutObserver = new LayoutObserver(handleUIChange);
+const layoutObserver = new LayoutObserver(handleLayoutChange, {
+  throttle: 10
+});
 
 const setParent = once(value => {
   parent = value;
   layoutObserver.observe();
-  handleUIChange(); // Let the parent know about our initial height.
+  handleLayoutChange(); // Let the parent know about our initial height.
 });
 
 document.addEventListener('mousedown', handleMouseDown, true);

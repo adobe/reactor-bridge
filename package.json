@@ -29,7 +29,7 @@
   "main": "./lib/parent.js",
   "dependencies": {
     "domready": "^1.0.8",
-    "layout-observer": "^0.1.0",
+    "layout-observer": "^1.1.1",
     "native-promise-only-ponyfill": "^1.0.1",
     "once": "^1.4.0",
     "penpal": "^2.0.0"
@@ -50,6 +50,7 @@
     "karma-webpack": "^1.8.0",
     "npm-run-all": "^3.1.1",
     "redirects": "^1.1.1",
+    "rsvp": "^3.3.3",
     "serve-static": "^1.11.1",
     "uglify-js": "^2.7.4",
     "webpack": "^1.13.2",

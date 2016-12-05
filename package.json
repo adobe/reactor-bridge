@@ -19,8 +19,11 @@
     "build": "npm-run-all --parallel build:child build:parent",
     "build:watch": "npm-run-all --parallel 'build:child -- --watch' 'build:parent -- --watch'",
     "test": "karma start",
+    "test:watch": "npm test -- --no-single-run",
+    "test:ci": "npm test -- --ci",
     "sandbox": "./scripts/runSandbox.js",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "ci-job": "npm run test:ci"
   },
   "files": [
     "dist",
@@ -43,10 +46,13 @@
     "chokidar": "^1.6.1",
     "connect": "^3.5.0",
     "fs-extra": "^1.0.0",
+    "ip": "^1.1.4",
     "jasmine-core": "^2.5.2",
     "karma": "^1.3.0",
     "karma-chrome-launcher": "^2.0.0",
+    "karma-firefox-launcher": "^1.0.0",
     "karma-jasmine": "^1.0.2",
+    "karma-webdriver-launcher": "^1.0.4",
     "karma-webpack": "^1.8.0",
     "npm-run-all": "^3.1.1",
     "redirects": "^1.1.1",
@@ -54,6 +60,6 @@
     "serve-static": "^1.11.1",
     "uglify-js": "^2.7.4",
     "webpack": "^1.13.2",
-    "yargs": "^6.4.0"
+    "yargs": "^6.5.0"
   }
 }

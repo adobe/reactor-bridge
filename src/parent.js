@@ -93,7 +93,8 @@ export const loadIframe = options => {
     openCssSelector = noop
   } = options;
 
-  let penpalConnection;
+  let destroy;
+  let iframe;
 
   const frameboyant = new Frameboyant({
     editModeZIndex,
@@ -126,18 +127,13 @@ export const loadIframe = options => {
     }
   };
 
-  const destroy = () => {
-    penpalConnection.destroy();
-    frameboyant.destroy();
-  };
-
   const loadPromise = new Promise((resolve, reject) => {
     const connectionTimeoutId = setTimeout(() => {
-      destroy();
       reject(ERROR_CODES.CONNECTION_TIMEOUT);
+      destroy();
     }, connectionTimeoutDuration);
 
-    penpalConnection = Penpal.connectToChild({
+    const penpalConnection = Penpal.connectToChild({
       url,
       appendTo: frameboyant.iframeContainer,
       methods: {
@@ -164,8 +160,8 @@ export const loadIframe = options => {
       clearTimeout(connectionTimeoutId);
 
       const renderTimeoutId = setTimeout(() => {
-        destroy();
         reject(ERROR_CODES.RENDER_TIMEOUT);
+        destroy();
       }, renderTimeoutDuration);
 
       frameboyant.setChild(child);
@@ -184,15 +180,25 @@ export const loadIframe = options => {
           exitEditMode: child.exitEditMode,
         });
       });
+    }, error => {
+      reject(`Connection failed: ${error}`);
     });
+
+    destroy = () => {
+      reject('Extension bridge destroyed');
+      penpalConnection.destroy();
+      frameboyant.destroy();
+    };
+
+    iframe = penpalConnection.iframe;
   });
 
-  penpalConnection.iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups');
-  frameboyant.setIframe(penpalConnection.iframe);
+  iframe.setAttribute('sandbox', 'allow-same-origin allow-scripts allow-popups');
+  frameboyant.setIframe(iframe);
 
   return {
     promise: loadPromise,
-    iframe: penpalConnection.iframe,
+    iframe,
     rootNode: frameboyant.root,
     destroy
   };

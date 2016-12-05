@@ -181,12 +181,37 @@ describe('parent', () => {
     loadIframe({
       url: 'http://localhost:9800/connectionFailure.html'
     }).promise.then(child => {
-
+      // Do nothing.
     }, err => {
-      expect(err === ERROR_CODES.CONNECTION_TIMEOUT);
+      expect(err).toBe(ERROR_CODES.CONNECTION_TIMEOUT);
       done();
     });
 
     jasmine.clock().tick(10000);
+  });
+
+  it('rejects promise when destroyed', done => {
+    const bridge = loadIframe({
+      url: 'http://localhost:9800/simpleSuccess.html'
+    });
+
+    bridge.promise.then(child => {
+      // Do nothing.
+    }, err => {
+      expect(err).toBe('Extension bridge destroyed');
+      done();
+    });
+
+    bridge.destroy();
+  });
+
+  it('removes iframe when destroyed', () => {
+    const bridge = loadIframe({
+      url: 'http://localhost:9800/simpleSuccess.html'
+    });
+
+    bridge.destroy();
+
+    expect(bridge.iframe.parentNode).toBeNull();
   });
 });

@@ -3,20 +3,11 @@
   <head>
     <meta charset="UTF-8">
     <title>Iframe</title>
-    <script src="extensionBridge.js"></script>
+    <script src="extensionbridge.min.js"></script>
     <script>
       extensionBridge.register({
         init: function(options) {},
-        validate: function() {
-          // We abuse validate() for our testing purposes.
-          var event = new MouseEvent('mousedown', {
-            bubbles: true
-          });
-
-          document.body.dispatchEvent(event);
-
-          return true;
-        },
+        validate: function() {},
         getSettings: function() {
           var bodyStyle = document.body.style;
 

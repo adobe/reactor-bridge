@@ -1,6 +1,6 @@
-import { loadIframe, setPromise, setDebug, ERROR_CODES } from '../parent';
 import Promise from 'native-promise-only-ponyfill';
 import RSVP from 'rsvp';
+import { loadIframe, setPromise, setDebug, ERROR_CODES } from '../parent';
 
 describe('parent', () => {
   let bridge;
@@ -20,7 +20,7 @@ describe('parent', () => {
 
   it('loads an iframe and provides API', done => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html'
+      url: `http://${location.hostname}:9800/simpleSuccess.html`
     });
 
     expect(bridge.iframe).toEqual(jasmine.any(HTMLIFrameElement));
@@ -40,7 +40,7 @@ describe('parent', () => {
     document.body.appendChild(container);
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html',
+      url: `http://${location.hostname}:9800/simpleSuccess.html`,
       container
     });
 
@@ -49,7 +49,7 @@ describe('parent', () => {
 
   it('sets sandbox attribute on iframe', () => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html',
+      url: `http://${location.hostname}:9800/simpleSuccess.html`,
     });
 
     expect(bridge.iframe.getAttribute('sandbox'))
@@ -58,7 +58,7 @@ describe('parent', () => {
 
   it('sizes the frameboyant root to the iframe content height during initialization', done => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html',
+      url: `http://${location.hostname}:9800/simpleSuccess.html`,
     });
 
     bridge.promise.then(child => {
@@ -69,7 +69,7 @@ describe('parent', () => {
 
   it('sizes the frameboyant root to the iframe content height after initialization', done => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/resize.html',
+      url: `http://${location.hostname}:9800/resize.html`,
     });
 
     bridge.promise.then(child => {
@@ -99,14 +99,13 @@ describe('parent', () => {
     boundsContainer.appendChild(relativelyPositionedParent);
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/editMode.html',
+      url: `http://${location.hostname}:9800/editMode.html`,
       container: relativelyPositionedParent,
       editModeBoundsContainer: boundsContainer
     });
 
     bridge.promise.then(child => {
-      // We abuse validate() for our testing purposes to trigger edit mode.
-      child.validate().then(() => {
+      child.enterEditMode().then(() => {
         const iframeContainer = bridge.rootNode.querySelector('.frameboyantIframeContainer');
         const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
         const boundsContainerRect = boundsContainer.getBoundingClientRect();
@@ -147,7 +146,7 @@ describe('parent', () => {
 
   it('proxies extension view API', done => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/extensionViewApi.html'
+      url: `http://${location.hostname}:9800/extensionViewApi.html`
     });
 
     bridge.promise.then(child => {
@@ -172,7 +171,7 @@ describe('parent', () => {
     const addResultSuffix = code => code + ' result';
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/lensApi.html',
+      url: `http://${location.hostname}:9800/lensApi.html`,
       openCodeEditor: addResultSuffix,
       openRegexTester: addResultSuffix,
       openDataElementSelector: addResultSuffix,
@@ -197,7 +196,7 @@ describe('parent', () => {
     jasmine.clock().install();
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/connectionFailure.html'
+      url: `http://${location.hostname}:9800/connectionFailure.html`
     });
 
     bridge.promise.then(child => {
@@ -212,7 +211,7 @@ describe('parent', () => {
 
   it('rejects promise when destroyed', done => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html'
+      url: `http://${location.hostname}:9800/simpleSuccess.html`
     });
 
     bridge.promise.then(child => {
@@ -227,7 +226,7 @@ describe('parent', () => {
 
   it('removes iframe when destroyed', () => {
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html'
+      url: `http://${location.hostname}:9800/simpleSuccess.html`
     });
 
     bridge.destroy();
@@ -241,7 +240,7 @@ describe('parent', () => {
     setPromise(RSVP.Promise);
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html'
+      url: `http://${location.hostname}:9800/simpleSuccess.html`
     });
 
     expect(bridge.promise).toEqual(jasmine.any(RSVP.Promise));
@@ -253,7 +252,7 @@ describe('parent', () => {
     setDebug(true);
 
     bridge = loadIframe({
-      url: 'http://localhost:9800/simpleSuccess.html'
+      url: `http://${location.hostname}:9800/simpleSuccess.html`
     });
 
     expect(console.log).toHaveBeenCalledWith('[Penpal]', 'Parent: Loading iframe');

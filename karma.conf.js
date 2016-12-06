@@ -2,7 +2,9 @@ const webpack = require('webpack');
 const http = require('http');
 const connect = require('connect');
 const serveStatic = require('serve-static');
-const buildChild = require('./scripts/utils/buildChild');
+const ip = require('ip');
+const path = require('path');
+const argv = require('yargs').argv;
 
 /**
  * We're going to serve fixtures (our mock extension views) from a port that's different from
@@ -11,13 +13,41 @@ const buildChild = require('./scripts/utils/buildChild');
  * served from a different domain than Lens.
  */
 const serveFixtures = () => {
-  buildChild({ watch: true });
-
   const childIframes = connect()
+    .use(serveStatic(path.join(require.resolve('rsvp'), '..')))
     .use(serveStatic('dist'))
     .use(serveStatic('src/__tests__/fixtures'));
 
   http.createServer(childIframes).listen(9800);
+};
+
+const webdriverConfig = {
+  hostname: '10.51.16.127',
+  port: 4444
+};
+
+const customLaunchers = {
+  'IE11 - Selenium Grid': {
+    base: 'WebDriver',
+    config: webdriverConfig,
+    browserName: 'internet explorer',
+    version: 11
+  },
+  'Edge - Selenium Grid': {
+    base: 'WebDriver',
+    config: webdriverConfig,
+    browserName: 'MicrosoftEdge'
+  },
+  'Chrome - Selenium Grid': {
+    base: 'WebDriver',
+    config: webdriverConfig,
+    browserName: 'chrome'
+  },
+  'Firefox - Selenium Grid': {
+    base: 'WebDriver',
+    config: webdriverConfig,
+    browserName: 'firefox'
+  }
 };
 
 module.exports = function(config) {
@@ -50,12 +80,14 @@ module.exports = function(config) {
       }
     },
     reporters: ['dots'],
+    hostname: ip.address(),
     port: 9801,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Chrome'],
-    singleRun: false,
+    customLaunchers,
+    browsers: argv.ci ? Object.keys(customLaunchers) : ['Chrome', 'Firefox'],
+    singleRun: true,
     concurrency: Infinity
   });
 };

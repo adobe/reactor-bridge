@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Iframe</title>
-    <script src="extensionBridge.js"></script>
+    <script src="rsvp.js"></script>
+    <script src="extensionbridge.min.js"></script>
     <script>
       extensionBridge.register({
         init: function(options) {
@@ -11,17 +12,17 @@
         },
         validate: function() {
           // We abuse validate() for our testing purposes.
-          return Promise.all([
-            new Promise(function(resolve) {
+          return RSVP.all([
+            new RSVP.Promise(function(resolve) {
               extensionBridge.openCodeEditor('code editor', resolve);
             }),
-            new Promise(function(resolve) {
+            new RSVP.Promise(function(resolve) {
               extensionBridge.openRegexTester('regex tester', resolve);
             }),
-            new Promise(function(resolve) {
+            new RSVP.Promise(function(resolve) {
               extensionBridge.openDataElementSelector('data element selector', resolve);
             }),
-            new Promise(function(resolve) {
+            new RSVP.Promise(function(resolve) {
               extensionBridge.openCssSelector('css selector', resolve);
             })
           ]);

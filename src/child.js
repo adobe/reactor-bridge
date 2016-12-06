@@ -73,7 +73,7 @@ const extensionBridge = {
 };
 
 const executeQueuedCall = (call) => {
-  extensionBridge[call.methodName](...call.args);
+  extensionBridge[call.methodName].apply(null, call.args);
 };
 
 const callQueue = window.extensionBridge._callQueue;

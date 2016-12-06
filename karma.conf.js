@@ -4,7 +4,6 @@ const connect = require('connect');
 const serveStatic = require('serve-static');
 const ip = require('ip');
 const path = require('path');
-const buildChild = require('./scripts/utils/buildChild');
 const argv = require('yargs').argv;
 
 /**
@@ -14,8 +13,6 @@ const argv = require('yargs').argv;
  * served from a different domain than Lens.
  */
 const serveFixtures = () => {
-  buildChild({ watch: true });
-
   const childIframes = connect()
     .use(serveStatic(path.join(require.resolve('rsvp'), '..')))
     .use(serveStatic('dist'))

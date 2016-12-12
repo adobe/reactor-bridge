@@ -7,11 +7,10 @@
     <script src="extensionbridge.min.js"></script>
     <script>
       extensionBridge.register({
-        init: function(options) {
-          return;
-        },
-        validate: function() {
-          // We abuse validate() for our testing purposes.
+        init: function(info) { },
+        validate: function() { },
+        getSettings: function() {
+          // We abuse getSettings() for our testing purposes.
           return RSVP.all([
             new RSVP.Promise(function(resolve) {
               extensionBridge.openCodeEditor('code editor', resolve);
@@ -25,10 +24,11 @@
             new RSVP.Promise(function(resolve) {
               extensionBridge.openCssSelector('css selector', resolve);
             })
-          ]);
-        },
-        getSettings: function() {
-          return {};
+          ]).then(function(results) {
+            return {
+              results: results
+            };
+          });
         }
       });
     </script>

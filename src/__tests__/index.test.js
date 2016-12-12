@@ -76,9 +76,16 @@ describe('parent', () => {
       var beforeSize = parseFloat(bridge.rootNode.style.height);
       // We abuse validate() for our testing purposes.
       child.validate().then(function() {
-        var afterSize = parseFloat(bridge.rootNode.style.height);
-        expect(beforeSize + 100).toEqual(afterSize);
-        done();
+        // The mutation observer that detects that the iframe's content size has changed is
+        // throttled so we need to wait at least that amount before being sure that the iframe
+        // sends its new content size to the parent. We can't really use a jasmine clock here
+        // because the throttling timeout is within the iframe so mocking the clock in the parent
+        // window wouldn't affect the throttling.
+        setTimeout(() => {
+          var afterSize = parseFloat(bridge.rootNode.style.height);
+          expect(beforeSize + 100).toEqual(afterSize);
+          done();
+        }, 50);
       });
     });
   });
@@ -156,7 +163,7 @@ describe('parent', () => {
         child.getSettings()
       ]).then(result => {
         expect(result).toEqual([
-          'init called',
+          undefined,
           false,
           {
             foo: 'bar'
@@ -164,6 +171,61 @@ describe('parent', () => {
         ]);
         done();
       });
+    });
+  });
+
+  it('returns a rejected promise if validate returns a non-boolean', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/invalidReturns.html`
+    });
+
+    bridge.promise.then(child => {
+      child.validate().then(
+        () => {},
+        error => {
+          expect(error)
+            .toContain('The extension attempted to return a non-boolean value from validate');
+          done();
+        }
+      );
+    });
+  });
+
+  it('rejects load promise if extension view has not registered init function', done => {
+    jasmine.clock().install();
+
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/unregisteredInit.html`
+    });
+
+    bridge.promise.then(
+      () => {},
+      error => {
+        expect(error).toBe('connectionTimeout');
+        jasmine.clock().uninstall();
+        done();
+      }
+    );
+
+    jasmine.clock().tick(10000);
+  });
+
+  it('returns a rejected promise if extension view has not registered ' +
+      'getSettings (or validate) function', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/unregisteredGetSettings.html`
+    });
+
+    bridge.promise.then(child => {
+      child.getSettings().then(
+        () => {},
+        error => {
+          expect(error)
+            .toContain('Unable to call getSettings on the extension. The extension must ' +
+              'register a getSettings function using extensionBridge.register().');
+          done();
+        }
+      );
     });
   });
 
@@ -179,9 +241,9 @@ describe('parent', () => {
     });
 
     bridge.promise.then(child => {
-      // We abuse validate() for our testing purposes.
-      child.validate().then(result => {
-        expect(result).toEqual([
+      // We abuse getSettings() for our testing purposes.
+      child.getSettings().then(response => {
+        expect(response.results).toEqual([
           'code editor result',
           'regex tester result',
           'data element selector result',
@@ -203,6 +265,7 @@ describe('parent', () => {
       // Do nothing.
     }, err => {
       expect(err).toBe(ERROR_CODES.CONNECTION_TIMEOUT);
+      jasmine.clock().uninstall();
       done();
     });
 

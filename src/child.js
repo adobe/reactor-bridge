@@ -9,42 +9,58 @@ const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};
 let parent = {};
 
-const wrapExtensionViewMethod = methodName => (...args) => {
-  if (extensionViewMethods[methodName]) {
-    let result;
-
-    try {
-      result = extensionViewMethods[methodName](...args);
-    } catch (error) {
-      console.error(`Error calling ${methodName} from parent window.`, error.stack);
-    }
-
-    return result;
+const getExtensionViewMethod = (methodName) => {
+  const method = extensionViewMethods[methodName];
+  if (method) {
+    return method;
   } else {
-    console.error(`You must register a ${methodName} function using extensionBridge.register().`);
+    throw new Error(`Unable to call ${methodName} on the extension. The extension must register a ${methodName} function using extensionBridge.register().`);
   }
+};
+
+const init = (...args) => {
+  getExtensionViewMethod('init')(...args);
+};
+
+const validate = (...args) => {
+  const result = getExtensionViewMethod('validate')(...args);
+
+  if (typeof result !== 'boolean') {
+    throw new Error(`The extension attempted to return a non-boolean value from validate: ${result}`);
+  }
+
+  return result;
+};
+
+const getSettings = function(...args) {
+  const result = getExtensionViewMethod('getSettings')(...args);
+
+  if (typeof result !== 'object') {
+    throw new Error('The extension attempted to return a non-object value from getSettings: ' + result);
+  }
+
+  return result;
 };
 
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
   const callback = args.pop();
 
   if (!callback) {
-    console.error('A callback is required when opening a shared view.');
-    return;
+    throw new Error('A callback is required when opening a shared view.');
   }
 
   if (parent[methodName]) {
     parent[methodName](...args).then(callback);
   } else {
-    console.error(`An error occurred while opening ${sharedViewName}.`);
+    throw new Error(`An error occurred while opening ${sharedViewName}. The shared view is unavailable.`);
   }
 };
 
 Penpal.connectToParent({
   methods: {
-    init: wrapExtensionViewMethod('init'),
-    validate: wrapExtensionViewMethod('validate'),
-    getSettings: wrapExtensionViewMethod('getSettings'),
+    init,
+    validate,
+    getSettings,
     setContentRect: Frameboyant.setContentRect,
     enterEditMode: Frameboyant.enterEditMode,
     exitEditMode: Frameboyant.exitEditMode

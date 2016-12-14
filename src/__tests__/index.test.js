@@ -192,8 +192,6 @@ describe('parent', () => {
   });
 
   it('rejects load promise if extension view has not registered init function', done => {
-    jasmine.clock().install();
-
     bridge = loadIframe({
       url: `http://${location.hostname}:9800/unregisteredInit.html`
     });
@@ -201,13 +199,25 @@ describe('parent', () => {
     bridge.promise.then(
       () => {},
       error => {
-        expect(error).toBe('connectionTimeout');
-        jasmine.clock().uninstall();
+        expect(error).toBe('Initialization failed: Error: Unable to call init on the extension. ' +
+          'The extension must register a init function using extensionBridge.register().');
         done();
       }
     );
+  });
 
-    jasmine.clock().tick(10000);
+  it('rejects load promise if extension view init function throws an error', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/initFailure.html`
+    });
+
+    bridge.promise.then(
+      () => {},
+      error => {
+        expect(error).toBe('Initialization failed: Error: bad things');
+        done();
+      }
+    );
   });
 
   it('returns a rejected promise if extension view has not registered ' +
@@ -280,7 +290,7 @@ describe('parent', () => {
     bridge.promise.then(child => {
       // Do nothing.
     }, err => {
-      expect(err).toBe('Extension bridge destroyed');
+      expect(err).toBe(ERROR_CODES.DESTROYED);
       done();
     });
 

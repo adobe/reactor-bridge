@@ -12,7 +12,8 @@ let Promise = window.Promise;
 
 export const ERROR_CODES = {
   CONNECTION_TIMEOUT: 'connectionTimeout',
-  RENDER_TIMEOUT: 'renderTimeout'
+  RENDER_TIMEOUT: 'renderTimeout',
+  DESTROYED: 'destroyed'
 };
 
 /**
@@ -106,10 +107,6 @@ export const loadIframe = options => {
   const iframeHeightSet = new Promise(resolve => resolveIframeHeightSet = resolve);
   iframeHeightSet.then(() => logger.log('Resize complete'));
 
-  let resolveInitComplete;
-  const initComplete = new Promise(resolve => resolveInitComplete = resolve);
-  initComplete.then(() => logger.log('Init complete.'));
-
   const sharedViewOpenedHandler = () => {
     frameboyant.setExitEditModeOnFocus(false);
   };
@@ -165,12 +162,15 @@ export const loadIframe = options => {
       }, renderTimeoutDuration);
 
       frameboyant.setChild(child);
-      child.init(extensionInitOptions).then(resolveInitComplete);
+
+      const initComplete = child.init(extensionInitOptions);
+      initComplete.then(() => logger.log('Init complete.'));
 
       Promise.all([
         iframeHeightSet,
         initComplete,
-      ]).then(() => {
+      ])
+      .then(() => {
         clearTimeout(renderTimeoutId);
         resolve({
           init: child.init,
@@ -179,13 +179,17 @@ export const loadIframe = options => {
           enterEditMode: child.enterEditMode,
           exitEditMode: child.exitEditMode,
         });
+      })
+      .catch(error => {
+        clearTimeout(renderTimeoutId);
+        reject(`Initialization failed: ${error}`);
       });
     }, error => {
       reject(`Connection failed: ${error}`);
     });
 
     destroy = () => {
-      reject('Extension bridge destroyed');
+      reject(ERROR_CODES.DESTROYED);
       penpalConnection.destroy();
       frameboyant.destroy();
     };

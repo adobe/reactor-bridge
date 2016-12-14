@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Iframe</title>
+    <script src="extensionbridge.min.js"></script>
+    <script>
+      extensionBridge.register({
+        init: function() {
+          throw new Error('bad things');
+        }
+      });
+    </script>
+  </head>
+  <body>
+    Iframe
+  </body>
+</html>

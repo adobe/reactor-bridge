@@ -105,7 +105,12 @@ export const loadIframe = options => {
 
   let resolveIframeHeightSet;
   const iframeHeightSet = new Promise(resolve => resolveIframeHeightSet = resolve);
-  iframeHeightSet.then(() => logger.log('Resize complete'));
+
+  iframeHeightSet
+    .then(() => {
+      logger.log('Resize complete')
+    })
+    .catch(() => {});
 
   const sharedViewOpenedHandler = () => {
     frameboyant.setExitEditModeOnFocus(false);
@@ -164,7 +169,12 @@ export const loadIframe = options => {
       frameboyant.setChild(child);
 
       const initComplete = child.init(extensionInitOptions);
-      initComplete.then(() => logger.log('Init complete.'));
+
+      initComplete
+        .then(() => {
+          logger.log('Init complete.')
+        })
+        .catch(() => {});
 
       Promise.all([
         iframeHeightSet,

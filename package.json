@@ -1,6 +1,6 @@
 {
   "name": "@reactor/extension-support-bridge",
-  "version": "7.3.1",
+  "version": "7.3.2",
   "description": "Communication API between Lens and Reactor extensions iframes.",
   "author": {
     "name": "DTM",

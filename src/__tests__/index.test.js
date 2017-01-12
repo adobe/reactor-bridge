@@ -307,6 +307,19 @@ describe('parent', () => {
     expect(bridge.iframe.parentNode).toBeNull();
   });
 
+  it('forces iframe to exit edit mode when destroyed', () => {
+    var editModeExitedSpy = jasmine.createSpy('editModeExited');
+
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/simpleSuccess.html`,
+      editModeExited: editModeExitedSpy
+    });
+
+    bridge.destroy();
+
+    expect(editModeExitedSpy).toHaveBeenCalled();
+  });
+
   it('allows a custom promise implementation to be used', () => {
     // We can't use native-promise-only-ponyfill to test this one because it will just expose
     // the native promise implementation when available.

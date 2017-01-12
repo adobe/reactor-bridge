@@ -135,7 +135,7 @@ export const loadIframe = options => {
       destroy();
     }, connectionTimeoutDuration);
 
-    const penpalConnection = Penpal.connectToChild({
+    const childConfig = {
       url,
       appendTo: frameboyant.iframeContainer,
       methods: {
@@ -156,7 +156,8 @@ export const loadIframe = options => {
           resolveIframeHeightSet();
         }
       }
-    });
+    };
+    const penpalConnection = Penpal.connectToChild(childConfig);
 
     penpalConnection.promise.then(child => {
       clearTimeout(connectionTimeoutId);
@@ -200,6 +201,7 @@ export const loadIframe = options => {
 
     destroy = () => {
       reject(ERROR_CODES.DESTROYED);
+      childConfig.methods.editModeExited();
       penpalConnection.destroy();
       frameboyant.destroy();
     };

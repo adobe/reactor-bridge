@@ -1,7 +1,7 @@
 {
-  "name": "@reactor/extension-support-bridge",
+  "name": "@adobe/composer-bridge",
   "version": "7.3.2",
-  "description": "Communication API between Lens and Reactor extensions iframes.",
+  "description": "Communication API between Lens and Composer extensions iframes.",
   "author": {
     "name": "DTM",
     "email": "DTM-Engineering@adobe.com"
@@ -9,9 +9,6 @@
   "repository": {
     "type": "git",
     "url": "git@git.corp.adobe.com:reactor/extension-support-bridge.git"
-  },
-  "publishConfig": {
-    "registry": "https://artifactory.corp.adobe.com/artifactory/api/npm/npm-mcps-release-local"
   },
   "scripts": {
     "build:child": "./scripts/buildChild.js",

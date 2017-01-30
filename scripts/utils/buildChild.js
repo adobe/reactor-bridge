@@ -1,3 +1,21 @@
+/*************************************************************************
+* ADOBE CONFIDENTIAL
+* ___________________
+*
+*  Copyright 2016 Adobe Systems Incorporated
+*  All Rights Reserved.
+*
+* NOTICE:  All information contained herein is, and remains
+* the property of Adobe Systems Incorporated and its suppliers,
+* if any.  The intellectual and technical concepts contained
+* herein are proprietary to Adobe Systems Incorporated and its
+* suppliers and are protected by all applicable intellectual property
+* laws, including trade secret and copyright laws.
+* Dissemination of this information or reproduction of this material
+* is strictly forbidden unless prior written permission is obtained
+* from Adobe Systems Incorporated.
+**************************************************************************/
+
 'use strict';
 
 const webpack = require('webpack');
@@ -12,6 +30,7 @@ const childLoaderInputPath = path.resolve(__dirname, '../../src/childLoader.js')
 const childLoaderOutputPath = path.resolve(__dirname, '../../dist/extensionbridge.min.js');
 const childInputPath = path.resolve(__dirname, '../../src/child.js');
 const childOutputPath = path.resolve(__dirname, '../../dist/extensionbridge-child.js');
+const banner = fs.readFileSync('./sdkCopyrightBanner.txt', 'utf8');
 
 const noop = () => {};
 
@@ -51,7 +70,13 @@ var childCompiler = webpack({
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.BannerPlugin(banner, {
+      raw: true
+    })
+  ]
 });
 
 /**

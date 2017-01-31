@@ -30,7 +30,7 @@ const childLoaderInputPath = path.resolve(__dirname, '../../src/childLoader.js')
 const childLoaderOutputPath = path.resolve(__dirname, '../../dist/extensionbridge.min.js');
 const childInputPath = path.resolve(__dirname, '../../src/child.js');
 const childOutputPath = path.resolve(__dirname, '../../dist/extensionbridge-child.js');
-const banner = fs.readFileSync('./sdkCopyrightBanner.txt', 'utf8');
+const banner = fs.readFileSync('./copyrightBanner.txt', 'utf8');
 
 const noop = () => {};
 

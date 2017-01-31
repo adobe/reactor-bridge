@@ -1,6 +1,6 @@
 {
   "name": "@adobe/composer-bridge",
-  "version": "7.3.3",
+  "version": "7.3.4",
   "description": "Communication API between Lens and Composer extensions iframes.",
   "author": {
     "name": "DTM",

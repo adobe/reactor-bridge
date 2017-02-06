@@ -30,7 +30,7 @@ let parent = {};
 const getExtensionViewMethod = (methodName) => {
   const method = extensionViewMethods[methodName];
   if (method) {
-    return method;
+    return method.bind(extensionViewMethods);
   } else {
     throw new Error(`Unable to call ${methodName} on the extension. The extension must register a ${methodName} function using extensionBridge.register().`);
   }

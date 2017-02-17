@@ -1,7 +1,7 @@
 {
-  "name": "@adobe/composer-bridge",
+  "name": "@adobe/reactor-bridge",
   "version": "7.3.5",
-  "description": "Communication API between Lens and Composer extensions iframes.",
+  "description": "Communication API between Lens and extension iframes.",
   "author": {
     "name": "DTM",
     "email": "DTM-Engineering@adobe.com"

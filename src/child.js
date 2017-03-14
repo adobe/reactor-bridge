@@ -19,7 +19,15 @@
 import Penpal from 'penpal';
 import Promise from 'native-promise-only-ponyfill';
 import Logger from './utils/logger';
-import Frameboyant from './frameboyant/frameboyant.child';
+import addStylesToPage from './utils/addStylesToPage';
+
+const STYLES = `
+  html, body {
+    background-color: transparent !important;
+  }
+`;
+
+addStylesToPage(STYLES);
 
 Penpal.Promise = Promise;
 
@@ -78,14 +86,10 @@ Penpal.connectToParent({
   methods: {
     init,
     validate,
-    getSettings,
-    setContentRect: Frameboyant.setContentRect,
-    enterEditMode: Frameboyant.enterEditMode,
-    exitEditMode: Frameboyant.exitEditMode
+    getSettings
   }
 }).promise.then(_parent => {
   parent = _parent;
-  Frameboyant.setParent(parent);
 });
 
 const extensionBridge = {

@@ -42,7 +42,6 @@ describe('parent', () => {
     });
 
     expect(bridge.iframe).toEqual(jasmine.any(HTMLIFrameElement));
-    expect(bridge.rootNode).toEqual(jasmine.any(HTMLDivElement));
     expect(bridge.destroy).toEqual(jasmine.any(Function));
 
     bridge.promise.then(child => {
@@ -74,100 +73,6 @@ describe('parent', () => {
       .toBe('allow-same-origin allow-scripts allow-popups');
   });
 
-  it('sizes the frameboyant root to the iframe content height during initialization', done => {
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`,
-    });
-
-    bridge.promise.then(child => {
-      expect(parseFloat(bridge.rootNode.style.height)).toBeGreaterThan(0);
-      done();
-    });
-  });
-
-  it('sizes the frameboyant root to the iframe content height after initialization', done => {
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/resize.html`,
-    });
-
-    bridge.promise.then(child => {
-      var beforeSize = parseFloat(bridge.rootNode.style.height);
-      // We abuse validate() for our testing purposes.
-      child.validate().then(function() {
-        // The mutation observer that detects that the iframe's content size has changed is
-        // throttled so we need to wait at least that amount before being sure that the iframe
-        // sends its new content size to the parent. We can't really use a jasmine clock here
-        // because the throttling timeout is within the iframe so mocking the clock in the parent
-        // window wouldn't affect the throttling.
-        setTimeout(() => {
-          var afterSize = parseFloat(bridge.rootNode.style.height);
-          expect(beforeSize + 100).toEqual(afterSize);
-          done();
-        }, 50);
-      });
-    });
-  });
-
-  it('positions and sizes iframe when toggling edit mode', done => {
-    const boundsContainer = document.createElement('div');
-    boundsContainer.style.margin = '10px';
-    boundsContainer.style.padding = '20px';
-    boundsContainer.style.height = '500px';
-    boundsContainer.style.width = '500px';
-    boundsContainer.style.border = '5px solid red';
-    document.body.appendChild(boundsContainer);
-
-    const relativelyPositionedParent = document.createElement('div');
-    relativelyPositionedParent.style.position = 'relative';
-    relativelyPositionedParent.style.padding = '4px';
-    relativelyPositionedParent.style.border = '1px solid blue';
-    boundsContainer.appendChild(relativelyPositionedParent);
-
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/editMode.html`,
-      container: relativelyPositionedParent,
-      editModeBoundsContainer: boundsContainer
-    });
-
-    bridge.promise.then(child => {
-      child.enterEditMode().then(() => {
-        const iframeContainer = bridge.rootNode.querySelector('.frameboyantIframeContainer');
-        const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
-        const boundsContainerRect = boundsContainer.getBoundingClientRect();
-        const iframeRect = bridge.iframe.getBoundingClientRect();
-
-        expect(iframeContainerComputedStyle.position).toBe('absolute');
-
-        // The iframe should have the same rect as the bounds container excluding any border
-        // the bounds container has.
-        expect(iframeRect.top).toBe(boundsContainerRect.top + 5);
-        expect(iframeRect.left).toBe(boundsContainerRect.left + 5);
-        expect(iframeRect.width).toBe(boundsContainerRect.width - 10);
-        expect(iframeRect.height).toBe(boundsContainerRect.height - 10);
-
-        // We abuse getSettings() for our testing purposes to get the iframe body styles.
-        return child.getSettings();
-      }).then(bodyStyles => {
-        expect(parseInt(bodyStyles.marginTop)).toBe(25);
-        expect(parseInt(bodyStyles.marginLeft)).toBe(25);
-        expect(parseInt(bodyStyles.width)).toBe(490);
-
-        return child.exitEditMode();
-      }).then(() => {
-        const iframeContainer = bridge.rootNode.querySelector('.frameboyantIframeContainer');
-        const iframeContainerComputedStyle = getComputedStyle(iframeContainer);
-        const boundsContainerRect = boundsContainer.getBoundingClientRect();
-        const iframeRect = bridge.iframe.getBoundingClientRect();
-
-        expect(iframeContainerComputedStyle.position).toBe('static');
-        expect(iframeRect.top).toBe(boundsContainerRect.top + 30);
-        expect(iframeRect.left).toBe(boundsContainerRect.left + 30);
-        expect(iframeRect.width).toBe(boundsContainerRect.width - 60);
-        expect(iframeRect.height).toBeLessThan(boundsContainerRect.height);
-        done();
-      })
-    });
-  });
 
   it('proxies extension view API', done => {
     bridge = loadIframe({
@@ -323,19 +228,6 @@ describe('parent', () => {
     bridge.destroy();
 
     expect(bridge.iframe.parentNode).toBeNull();
-  });
-
-  it('forces iframe to exit edit mode when destroyed', () => {
-    var editModeExitedSpy = jasmine.createSpy('editModeExited');
-
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`,
-      editModeExited: editModeExitedSpy
-    });
-
-    bridge.destroy();
-
-    expect(editModeExitedSpy).toHaveBeenCalled();
   });
 
   it('allows a custom promise implementation to be used', () => {

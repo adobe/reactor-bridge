@@ -29,14 +29,7 @@ loadIframe({
   openCodeEditor: noop,
   openRegexTester: noop,
   openDataElementSelector: noop,
-  openCssSelector: noop,
-  editModeZIndex: 1001,
-  editModeEntered() {
-    document.getElementById('backdrop').classList.add('editMode');
-  },
-  editModeExited() {
-    document.getElementById('backdrop').classList.remove('editMode');
-  }
+  openCssSelector: noop
 }).promise.then(() => {
   document.getElementById('ruleComponent').classList.remove('loading');
 });

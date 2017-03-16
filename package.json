@@ -1,6 +1,6 @@
 {
   "name": "@adobe/reactor-bridge",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "Communication API between Lens and extension iframes.",
   "author": {
     "name": "Adobe Systems Incorporated",

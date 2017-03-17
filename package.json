@@ -3,7 +3,7 @@
   "version": "8.0.1",
   "description": "Communication API between Lens and extension iframes.",
   "author": {
-    "name": "Adobe Systems Incorporated",
+    "name": "Adobe Systems",
     "url": "http://adobe.com",
     "email": "reactor@adobe.com"
   },

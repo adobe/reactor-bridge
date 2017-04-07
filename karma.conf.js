@@ -14,7 +14,7 @@ const argv = require('yargs').argv;
  */
 const serveFixtures = () => {
   const childIframes = connect()
-    .use(serveStatic(path.join(require.resolve('rsvp'), '..')))
+    .use(serveStatic(path.join(require.resolve('promise-polyfill'), '..')))
     .use(serveStatic('dist'))
     .use(serveStatic('src/__tests__/fixtures'));
 

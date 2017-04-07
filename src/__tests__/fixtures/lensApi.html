@@ -3,25 +3,26 @@
   <head>
     <meta charset="UTF-8">
     <title>Iframe</title>
-    <script src="rsvp.js"></script>
+    <script src="promise.js"></script>
     <script src="extensionbridge.min.js"></script>
     <script>
+      debugger;
       extensionBridge.register({
         init: function(info) { },
         validate: function() { },
         getSettings: function() {
           // We abuse getSettings() for our testing purposes.
-          return RSVP.all([
-            new RSVP.Promise(function(resolve) {
+          return Promise.all([
+            new Promise(function(resolve) {
               extensionBridge.openCodeEditor('code editor', resolve);
             }),
-            new RSVP.Promise(function(resolve) {
+            new Promise(function(resolve) {
               extensionBridge.openRegexTester('regex tester', resolve);
             }),
-            new RSVP.Promise(function(resolve) {
+            new Promise(function(resolve) {
               extensionBridge.openDataElementSelector('data element selector', resolve);
             }),
-            new RSVP.Promise(function(resolve) {
+            new Promise(function(resolve) {
               extensionBridge.openCssSelector('css selector', resolve);
             })
           ]).then(function(results) {

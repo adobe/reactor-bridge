@@ -17,7 +17,7 @@
 **************************************************************************/
 
 import Penpal from 'penpal';
-import Promise from 'native-promise-only-ponyfill';
+import Promise from 'promise-polyfill';
 import Logger from './utils/logger';
 import addStylesToPage from './utils/addStylesToPage';
 

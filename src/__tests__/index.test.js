@@ -16,8 +16,7 @@
 * from Adobe Systems Incorporated.
 **************************************************************************/
 
-import Promise from 'native-promise-only-ponyfill';
-import RSVP from 'rsvp';
+import Promise from 'promise-polyfill';
 import { loadIframe, setPromise, setDebug, ERROR_CODES } from '../parent';
 
 describe('parent', () => {
@@ -228,18 +227,6 @@ describe('parent', () => {
     bridge.destroy();
 
     expect(bridge.iframe.parentNode).toBeNull();
-  });
-
-  it('allows a custom promise implementation to be used', () => {
-    // We can't use native-promise-only-ponyfill to test this one because it will just expose
-    // the native promise implementation when available.
-    setPromise(RSVP.Promise);
-
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`
-    });
-
-    expect(bridge.promise).toEqual(jasmine.any(RSVP.Promise));
   });
 
   it('allows debugging to be enabled', () => {

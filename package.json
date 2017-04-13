@@ -1,7 +1,7 @@
 {
   "name": "@adobe/reactor-bridge",
   "version": "8.0.2",
-  "description": "Communication API between Lens and extension iframes.",
+  "description": "Communication API between the Launch UI (Lens) and extension views.",
   "author": {
     "name": "Adobe Systems",
     "url": "http://adobe.com",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@git.corp.adobe.com:reactor/extension-support-bridge.git"
+    "url": "git@github.com:Adobe-Marketing-Cloud/reactor-bridge.git"
   },
   "scripts": {
     "build:child": "./scripts/buildChild.js",

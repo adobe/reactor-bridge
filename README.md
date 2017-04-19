@@ -1,4 +1,7 @@
 # @adobe/reactor-bridge
+
+[![npm (scoped with tag)](https://img.shields.io/npm/v/@adobe/reactor-bridge.svg?style=flat)](https://www.npmjs.com/package/@adobe/reactor-bridge)
+
 This project provides a communication layer between the Launch UI (Lens) and extension views. The layer contains three different parts:
 
 * **Parent (lib/parent.js):** This is the portion of the communication layer that Lens uses. Lens uses this by importing it directly:

@@ -156,7 +156,7 @@ describe('parent', () => {
   });
 
   it('proxies lens API', done => {
-    const addResultSuffix = code => code + ' result';
+    const addResultSuffix = options => options.testOption + ' result';
 
     bridge = loadIframe({
       url: `http://${location.hostname}:9800/lensApi.html`,

@@ -14,16 +14,24 @@
           // We abuse getSettings() for our testing purposes.
           return Promise.all([
             new Promise(function(resolve) {
-              extensionBridge.openCodeEditor('code editor', resolve);
+              extensionBridge.openCodeEditor(resolve, {
+                testOption: 'code editor'
+              });
             }),
             new Promise(function(resolve) {
-              extensionBridge.openRegexTester('regex tester', resolve);
+              extensionBridge.openRegexTester(resolve, {
+                testOption: 'regex tester'
+              });
             }),
             new Promise(function(resolve) {
-              extensionBridge.openDataElementSelector('data element selector', resolve);
+              extensionBridge.openDataElementSelector(resolve, {
+                testOption: 'data element selector'
+              });
             }),
             new Promise(function(resolve) {
-              extensionBridge.openCssSelector('css selector', resolve);
+              extensionBridge.openCssSelector(resolve, {
+                testOption: 'css selector'
+              });
             })
           ]).then(function(results) {
             return {

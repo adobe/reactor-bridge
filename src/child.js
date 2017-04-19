@@ -63,14 +63,39 @@ const getSettings = function(...args) {
 };
 
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
-  const callback = args.pop();
-
-  if (!callback) {
-    throw new Error('A callback is required when opening a shared view.');
-  }
-
   if (parent[methodName]) {
-    parent[methodName](...args).then(callback);
+    // TODO: Remove the "if" after the deprecation process is complete.
+    if (typeof args[0] !== 'function') {
+      console.warn(
+        `Your usage of ${methodName} has been deprecated and support will be removed before ` +
+        `Launch is released. Please refer to ` +
+        `http://reactor.corp.adobe.com/guides/extensions/views/#leveraging-shared-views ` +
+        `for current method signature documentation.`
+      );
+
+      const callback = args.pop();
+
+      if (!callback) {
+        throw new Error('A callback is required when opening a shared view.');
+      }
+
+      switch (methodName) {
+        case 'openCodeEditor':
+          parent.openCodeEditor({ code: args[0] }).then(callback);
+          break;
+        case 'openRegexTester':
+          parent.openRegexTester({ regex: args[0] }).then(callback);
+          break;
+      }
+    } else {
+      const callback = args.shift();
+
+      if (!callback) {
+        throw new Error('A callback is required when opening a shared view.');
+      }
+
+      parent[methodName](...args).then(callback);
+    }
   } else {
     throw new Error(`An error occurred while opening ${sharedViewName}. The shared view is unavailable.`);
   }

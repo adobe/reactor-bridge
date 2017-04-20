@@ -69,7 +69,7 @@ const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
       console.warn(
         `Your usage of ${methodName} has been deprecated and support will be removed before ` +
         `Launch is released. Please refer to ` +
-        `http://reactor.corp.adobe.com/guides/extensions/views/#leveraging-shared-views ` +
+        `https://git.corp.adobe.com/reactor/propaganda/blob/master/guides/extensions/views.md#leveraging-shared-views ` +
         `for current method signature documentation.`
       );
 

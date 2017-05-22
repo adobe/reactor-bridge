@@ -84,7 +84,7 @@ const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
           parent.openCodeEditor({ code: args[0] }).then(callback);
           break;
         case 'openRegexTester':
-          parent.openRegexTester({ regex: args[0] }).then(callback);
+          parent.openRegexTester({ pattern: args[0] }).then(callback);
           break;
       }
     } else {

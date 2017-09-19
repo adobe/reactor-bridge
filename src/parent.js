@@ -86,7 +86,8 @@ export const loadIframe = options => {
     openCodeEditor = noop,
     openRegexTester = noop,
     openDataElementSelector = noop,
-    openCssSelector = noop
+    openCssSelector = noop,
+    markAsDirty = noop
   } = options;
 
   let destroy;
@@ -113,7 +114,8 @@ export const loadIframe = options => {
         openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
         openRegexTester: createOpenSharedViewProxy(openRegexTester),
         openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
-        openCssSelector: createOpenSharedViewProxy(openCssSelector)
+        openCssSelector: createOpenSharedViewProxy(openCssSelector),
+        markAsDirty
       }
     };
     const penpalConnection = Penpal.connectToChild(childConfig);

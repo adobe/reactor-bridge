@@ -84,6 +84,12 @@ Penpal.connectToParent({
   }
 }).promise.then(_parent => {
   parent = _parent;
+
+  // When the iframe gains focus we consider its contents "dirty". This is used by Lens
+  // to determine whether to show a warning to a user when they attempt to leave the editor.
+  window.addEventListener('focus', () => {
+    parent.markAsDirty();
+  });
 });
 
 const extensionBridge = {

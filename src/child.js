@@ -27,7 +27,7 @@ Penpal.Promise = Promise;
 
 const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};
-let parent = {};
+let connectionPromise;
 
 const getExtensionViewMethod = (methodName) => {
   const method = extensionViewMethods[methodName];
@@ -63,34 +63,28 @@ const getSettings = function(...args) {
 };
 
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
-  if (parent[methodName]) {
-    const callback = args.shift();
+  const callback = args.shift();
 
-    if (!callback) {
-      throw new Error('A callback is required when opening a shared view.');
-    }
-
-    parent[methodName](...args).then(callback);
-  } else {
-    throw new Error(`An error occurred while opening ${sharedViewName}. The shared view is unavailable.`);
+  if (!callback) {
+    throw new Error('A callback is required when opening a shared view.');
   }
+
+  connectionPromise.then((parent) => {
+    if (parent[methodName]) {
+      parent[methodName](...args).then(callback);
+    } else {
+      throw new Error(`An error occurred while opening ${sharedViewName}. The shared view is unavailable.`);
+    }
+  });
 };
 
-Penpal.connectToParent({
+connectionPromise = Penpal.connectToParent({
   methods: {
     init,
     validate,
     getSettings
   }
-}).promise.then(_parent => {
-  parent = _parent;
-
-  // When the iframe gains focus we consider its contents "dirty". This is used by Lens
-  // to determine whether to show a warning to a user when they attempt to leave the editor.
-  window.addEventListener('focus', () => {
-    parent.markAsDirty();
-  });
-});
+}).promise;
 
 const extensionBridge = {
   openCodeEditor: wrapOpenSharedViewMethod('openCodeEditor', 'code editor'),
@@ -101,7 +95,7 @@ const extensionBridge = {
     extensionViewMethods = {
       ...methods
     };
-
+    connectionPromise.then(parent => parent.extensionRegistered());
     logger.log('Methods registered by extension.');
   },
   setDebug(value) {
@@ -109,6 +103,10 @@ const extensionBridge = {
     Logger.enabled = value;
   }
 };
+
+window.addEventListener('focus', () => {
+  connectionPromise.then(parent => parent.markAsDirty());
+});
 
 const executeQueuedCall = (call) => {
   extensionBridge[call.methodName].apply(null, call.args);

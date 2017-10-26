@@ -107,7 +107,7 @@ describe('parent', () => {
     });
   });
 
-  it('rejects load promise if extension view has not registered init function', done => {
+  it('times out if extension view doesn\'t register with bridge', done => {
     bridge = loadIframe({
       url: `http://${location.hostname}:9800/unregisteredInit.html`
     });
@@ -115,8 +115,7 @@ describe('parent', () => {
     bridge.promise.then(
       () => {},
       error => {
-        expect(error).toBe('Initialization failed: Error: Unable to call init on the extension. ' +
-          'The extension must register a init function using extensionBridge.register().');
+        expect(error).toBe('renderTimeout');
         done();
       }
     );
@@ -130,7 +129,7 @@ describe('parent', () => {
     bridge.promise.then(
       () => {},
       error => {
-        expect(error).toBe('Initialization failed: Error: bad things');
+        expect(error).toBe('Extension initialization failed: Error: bad things');
         done();
       }
     );

@@ -93,21 +93,22 @@ export const loadIframe = options => {
   let destroy;
   let iframe;
 
-
   const createOpenSharedViewProxy = openSharedViewFn => {
     return (...args) => {
-      const promise = Promise.resolve(openSharedViewFn(...args));
-      return promise;
+      return Promise.resolve(openSharedViewFn(...args));
     }
   };
 
   const loadPromise = new Promise((resolve, reject) => {
+    let child;
+    let renderTimeoutId;
+
     const connectionTimeoutId = setTimeout(() => {
       reject(ERROR_CODES.CONNECTION_TIMEOUT);
       destroy();
     }, connectionTimeoutDuration);
 
-    const childConfig = {
+    const penpalConnection = Penpal.connectToChild({
       url,
       appendTo: container,
       methods: {
@@ -115,32 +116,35 @@ export const loadIframe = options => {
         openRegexTester: createOpenSharedViewProxy(openRegexTester),
         openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
         openCssSelector: createOpenSharedViewProxy(openCssSelector),
+        extensionRegistered() {
+          logger.log('Extension registered.');
+          child.init(extensionInitOptions).then(() => {
+            clearTimeout(renderTimeoutId);
+            logger.log('Extension initialized.');
+            resolve({
+              // We hand init back even though we just called init(). This is really for
+              // the sandbox tool's benefit so a developer testing their extension view can
+              // initialize multiple times with different info.
+              init: child.init,
+              validate: child.validate,
+              getSettings: child.getSettings
+            });
+          }).catch(error => {
+            clearTimeout(renderTimeoutId);
+            reject(`Extension initialization failed: ${error}`);
+          });
+        },
         markAsDirty
       }
-    };
-    const penpalConnection = Penpal.connectToChild(childConfig);
+    });
 
-    penpalConnection.promise.then(child => {
+    penpalConnection.promise.then(_child => {
+      child = _child;
       clearTimeout(connectionTimeoutId);
-
-      const renderTimeoutId = setTimeout(() => {
+      renderTimeoutId = setTimeout(() => {
         reject(ERROR_CODES.RENDER_TIMEOUT);
         destroy();
       }, renderTimeoutDuration);
-
-      child.init(extensionInitOptions).then(() => {
-        logger.log('Init complete.')
-        clearTimeout(renderTimeoutId);
-        resolve({
-          init: child.init,
-          validate: child.validate,
-          getSettings: child.getSettings
-        });
-      })
-      .catch(error => {
-        clearTimeout(renderTimeoutId);
-        reject(`Initialization failed: ${error}`);
-      });
     }, error => {
       reject(`Connection failed: ${error}`);
     });

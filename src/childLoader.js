@@ -24,6 +24,11 @@
  * will load child v2 in qe and we can appropriately test.
  */
 (function(window, document, childPath) {
+  // Prevent double-loading of extension bridge.
+  if (window.extensionBridge) {
+    return;
+  }
+
   var bridge = window.extensionBridge = {
     _callQueue: []
   };

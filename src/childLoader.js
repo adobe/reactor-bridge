@@ -23,20 +23,21 @@
  * loading child v1 while Lens would be loading parent v2. By using this loader, the extension
  * will load child v2 in qe and we can appropriately test.
  */
-(function(window, document, childPath) {
-  // Prevent double-loading of extension bridge.
-  if (window.extensionBridge) {
-    return;
-  }
 
-  var bridge = window.extensionBridge = {
+import Promise from 'promise-polyfill';
+
+// Prevent double-loading of extension bridge.
+if (!window.extensionBridge) {
+  const childPath = '/extensionbridge/extensionbridge-child.js';
+
+  const bridge = window.extensionBridge = {
     _callQueue: []
   };
 
-  var anchor = document.createElement('a');
+  const anchor = document.createElement('a');
   anchor.href = document.referrer;
 
-  var childURL = anchor.protocol +
+  const childURL = anchor.protocol +
     '//' +
     anchor.hostname +
     (anchor.port ? ':' + anchor.port : '') +
@@ -45,23 +46,25 @@
   [
     'openCodeEditor',
     'openDataElementSelector',
-    'openCssSelector',
     'openRegexTester',
     'register',
     'setDebug'
-  ].forEach(function(methodName) {
-    bridge[methodName] = function() {
+  ].forEach((methodName) => {
+    bridge[methodName] = (...args) => new Promise((resolve, reject) => {
       bridge._callQueue.push({
-        methodName: methodName,
-        args: arguments
+        methodName,
+        args,
+        resolve,
+        reject
       })
-    }
+    });
   });
 
-  var script = document.createElement('script');
+  const script = document.createElement('script');
   script.async = true;
   script.src = childURL;
 
-  var firstDocScript = document.getElementsByTagName('script')[0];
+  const firstDocScript = document.getElementsByTagName('script')[0];
   firstDocScript.parentNode.insertBefore(script, firstDocScript);
-})(window, document, '/extensionbridge/extensionbridge-child.js');
+}
+

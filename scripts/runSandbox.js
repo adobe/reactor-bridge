@@ -12,23 +12,41 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-const webpack = require('webpack');
 const http = require('http');
 const connect = require('connect');
 const serveStatic = require('serve-static');
 const path = require('path');
-const once = require('once');
 const redirects = require('redirects');
-const createWebpackOutputHandler = require('./utils/createWebpackOutputHandler');
-const sandboxWebpackConfig = require('../sandbox/webpack.sandbox.config');
 const buildChild = require('./utils/buildChild');
+
+const rollup = require('rollup');
+const resolve = require('rollup-plugin-node-resolve');
+const commonjs = require('rollup-plugin-commonjs');
+const babel = require('rollup-plugin-babel');
 
 const IFRAME_PORT = 9800;
 const SANDBOX_PORT = 9801;
 
+const rollupConfig = {
+  input: path.join(__dirname, '../sandbox/src/index.js'),
+  plugins: [
+    commonjs(),
+    resolve(),
+    babel()
+  ],
+  output: {
+    file: path.join(__dirname, '../sandbox/dist/index.js'),
+    format: 'iife'
+  }
+};
+
 const buildSandboxParentApp = () => {
-  return new Promise((resolve, reject) => {
-    webpack(sandboxWebpackConfig).watch({}, createWebpackOutputHandler(resolve, reject));
+  return new Promise((resolve) => {
+    rollup.watch(rollupConfig).on('event', (event) => {
+      if (event.code === 'END') {
+        resolve();
+      }
+    });
   });
 };
 

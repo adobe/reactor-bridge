@@ -63,18 +63,27 @@ const getSettings = function(...args) {
 };
 
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
-  const callback = args.shift();
+  let callback;
 
-  if (!callback) {
-    throw new Error('A callback is required when opening a shared view.');
+  if (typeof args[0] === 'function') {
+    callback = args.shift();
+    console.warn(
+      'Passing a callback to extensionBridge.' + methodName + '() has been deprecated. ' +
+      'The method now returns a promise that should be used instead.'
+    );
   }
 
-  connectionPromise.then((parent) => {
+  return connectionPromise.then((parent) => {
     if (parent[methodName]) {
-      parent[methodName](...args).then(callback);
+      return parent[methodName](...args);
     } else {
       throw new Error(`An error occurred while opening ${sharedViewName}. The shared view is unavailable.`);
     }
+  }).then((result) => {
+    if (callback) {
+      callback(result);
+    }
+    return result;
   });
 };
 
@@ -89,7 +98,6 @@ connectionPromise = Penpal.connectToParent({
 const extensionBridge = {
   openCodeEditor: wrapOpenSharedViewMethod('openCodeEditor', 'code editor'),
   openDataElementSelector: wrapOpenSharedViewMethod('openDataElementSelector', 'data element selector'),
-  openCssSelector: wrapOpenSharedViewMethod('openCssSelector', 'CSS selector'),
   openRegexTester: wrapOpenSharedViewMethod('openRegexTester', 'regex tester'),
   register(methods) {
     extensionViewMethods = {
@@ -109,7 +117,8 @@ window.addEventListener('focus', () => {
 });
 
 const executeQueuedCall = (call) => {
-  extensionBridge[call.methodName].apply(null, call.args);
+  Promise.resolve(extensionBridge[call.methodName](...call.args))
+    .then(call.resolve, call.reject);
 };
 
 const callQueue = window.extensionBridge._callQueue;

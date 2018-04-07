@@ -71,9 +71,6 @@ export const ERROR_CODES = {
  * @param {Function} [options.openDataElementSelector] The function to call when the extension view
  * requests that the data element selector should open. The function should return a promise that
  * is resolved with the selected data element name.
- * @param {Function} [options.openCssSelector] The function to call when the extension view requests
- * that the CSS selector should open. The function should return a promise that is resolved
- * with the generated CSS selector.
  * @returns {Bridge}
  */
 export const loadIframe = options => {
@@ -86,7 +83,6 @@ export const loadIframe = options => {
     openCodeEditor = noop,
     openRegexTester = noop,
     openDataElementSelector = noop,
-    openCssSelector = noop,
     markAsDirty = noop
   } = options;
 
@@ -100,7 +96,6 @@ export const loadIframe = options => {
   };
 
   const loadPromise = new Promise((resolve, reject) => {
-    let child;
     let renderTimeoutId;
 
     const connectionTimeoutId = setTimeout(() => {
@@ -115,31 +110,31 @@ export const loadIframe = options => {
         openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
         openRegexTester: createOpenSharedViewProxy(openRegexTester),
         openDataElementSelector: createOpenSharedViewProxy(openDataElementSelector),
-        openCssSelector: createOpenSharedViewProxy(openCssSelector),
         extensionRegistered() {
           logger.log('Extension registered.');
-          child.init(extensionInitOptions).then(() => {
-            clearTimeout(renderTimeoutId);
-            logger.log('Extension initialized.');
-            resolve({
-              // We hand init back even though we just called init(). This is really for
-              // the sandbox tool's benefit so a developer testing their extension view can
-              // initialize multiple times with different info.
-              init: child.init,
-              validate: child.validate,
-              getSettings: child.getSettings
+          penpalConnection.promise.then(child => {
+            child.init(extensionInitOptions).then(() => {
+              clearTimeout(renderTimeoutId);
+              logger.log('Extension initialized.');
+              resolve({
+                // We hand init back even though we just called init(). This is really for
+                // the sandbox tool's benefit so a developer testing their extension view can
+                // initialize multiple times with different info.
+                init: child.init,
+                validate: child.validate,
+                getSettings: child.getSettings
+              });
+            }).catch(error => {
+              clearTimeout(renderTimeoutId);
+              reject(`Extension initialization failed: ${error.message}`);
             });
-          }).catch(error => {
-            clearTimeout(renderTimeoutId);
-            reject(`Extension initialization failed: ${error}`);
           });
         },
         markAsDirty
       }
     });
 
-    penpalConnection.promise.then(_child => {
-      child = _child;
+    penpalConnection.promise.then(() => {
       clearTimeout(connectionTimeoutId);
       renderTimeoutId = setTimeout(() => {
         reject(ERROR_CODES.RENDER_TIMEOUT);

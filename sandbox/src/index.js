@@ -22,29 +22,5 @@ loadIframe({
   extensionInitOptions: {},
   openCodeEditor: noop,
   openRegexTester: noop,
-  openDataElementSelector: noop,
-  openCssSelector: noop
-}).promise.then(() => {
-  document.getElementById('ruleComponent').classList.remove('loading');
-});
-
-var animateSlide = function(element) {
-  var height = 0;
-  var mode = 'grow';
-
-  setInterval(function() {
-    if (height === 100) {
-      mode = 'shrink';
-    } else if (height === 0) {
-      mode = 'grow';
-    }
-
-    mode === 'grow' ? height++ : height--;
-
-    element.style.height = height + 'px';
-  }, 20);
-};
-
-document.addEventListener('DOMContentLoaded', function() {
-  animateSlide(document.getElementById('animatedBox'));
+  openDataElementSelector: noop
 });

@@ -67,6 +67,7 @@ const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
 
   if (typeof args[0] === 'function') {
     callback = args.shift();
+    // Deprecated April 10, 2018. 30+ extensions were using a callback at the time.
     console.warn(
       'Passing a callback to extensionBridge.' + methodName + '() has been deprecated. ' +
       'The method now returns a promise that should be used instead.'
@@ -117,6 +118,9 @@ window.addEventListener('focus', () => {
 });
 
 const executeQueuedCall = (call) => {
+  // Not all of the extension bridge methods return promises. Rather than do a switch where we
+  // only handle promises coming from certain methods here, we'll just always convert the return
+  // value to a promise and them consistently.
   Promise.resolve(extensionBridge[call.methodName](...call.args))
     .then(call.resolve, call.reject);
 };

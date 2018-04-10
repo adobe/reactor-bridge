@@ -50,6 +50,10 @@ if (!window.extensionBridge) {
     'register',
     'setDebug'
   ].forEach((methodName) => {
+    // We'll return a promise immediately for every method. Some of the underlying methods don't
+    // actually return anything, but it's simplest to just return a promise for all methods here.
+    // Once the extension bridge child is loaded, it will process everything in the _callQueue
+    // and resolve/reject the promises that we've returned to the user here.
     bridge[methodName] = (...args) => new Promise((resolve, reject) => {
       bridge._callQueue.push({
         methodName,

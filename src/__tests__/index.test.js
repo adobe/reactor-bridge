@@ -99,7 +99,7 @@ describe('parent', () => {
       child.validate().then(
         () => {},
         error => {
-          expect(error)
+          expect(error.message)
             .toContain('The extension attempted to return a non-boolean value from validate');
           done();
         }
@@ -129,7 +129,7 @@ describe('parent', () => {
     bridge.promise.then(
       () => {},
       error => {
-        expect(error).toBe('Extension initialization failed: Error: bad things');
+        expect(error).toBe('Extension initialization failed: bad things');
         done();
       }
     );
@@ -145,7 +145,7 @@ describe('parent', () => {
       child.getSettings().then(
         () => {},
         error => {
-          expect(error)
+          expect(error.message)
             .toContain('Unable to call getSettings on the extension. The extension must ' +
               'register a getSettings function using extensionBridge.register().');
           done();
@@ -161,8 +161,7 @@ describe('parent', () => {
       url: `http://${location.hostname}:9800/lensApi.html`,
       openCodeEditor: addResultSuffix,
       openRegexTester: addResultSuffix,
-      openDataElementSelector: addResultSuffix,
-      openCssSelector: addResultSuffix
+      openDataElementSelector: addResultSuffix
     });
 
     bridge.promise.then(child => {
@@ -171,8 +170,7 @@ describe('parent', () => {
         expect(response.results).toEqual([
           'code editor result',
           'regex tester result',
-          'data element selector result',
-          'css selector result'
+          'data element selector result'
         ]);
         done();
       });

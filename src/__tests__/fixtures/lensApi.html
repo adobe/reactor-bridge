@@ -6,32 +6,20 @@
     <script src="promise.js"></script>
     <script src="extensionbridge.min.js"></script>
     <script>
-      debugger;
       extensionBridge.register({
         init: function(info) { },
         validate: function() { },
         getSettings: function() {
           // We abuse getSettings() for our testing purposes.
           return Promise.all([
-            new Promise(function(resolve) {
-              extensionBridge.openCodeEditor(resolve, {
-                testOption: 'code editor'
-              });
+            extensionBridge.openCodeEditor({
+              testOption: 'code editor'
             }),
-            new Promise(function(resolve) {
-              extensionBridge.openRegexTester(resolve, {
-                testOption: 'regex tester'
-              });
+            extensionBridge.openRegexTester({
+              testOption: 'regex tester'
             }),
-            new Promise(function(resolve) {
-              extensionBridge.openDataElementSelector(resolve, {
-                testOption: 'data element selector'
-              });
-            }),
-            new Promise(function(resolve) {
-              extensionBridge.openCssSelector(resolve, {
-                testOption: 'css selector'
-              });
+            extensionBridge.openDataElementSelector({
+              testOption: 'data element selector'
             })
           ]).then(function(results) {
             return {

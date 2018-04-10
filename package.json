@@ -1,6 +1,6 @@
 {
   "name": "@adobe/reactor-bridge",
-  "version": "9.1.1",
+  "version": "9.2.0",
   "description": "Communication API between the Launch UI (Lens) and extension views.",
   "author": {
     "name": "Adobe Systems",

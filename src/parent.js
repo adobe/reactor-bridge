@@ -98,14 +98,10 @@ export const loadIframe = options => {
   const loadPromise = new Promise((resolve, reject) => {
     let renderTimeoutId;
 
-    const connectionTimeoutId = setTimeout(() => {
-      reject(ERROR_CODES.CONNECTION_TIMEOUT);
-      destroy();
-    }, connectionTimeoutDuration);
-
     const penpalConnection = Penpal.connectToChild({
       url,
       appendTo: container,
+      timeout: connectionTimeoutDuration,
       methods: {
         openCodeEditor: createOpenSharedViewProxy(openCodeEditor),
         openRegexTester: createOpenSharedViewProxy(openRegexTester),
@@ -126,7 +122,7 @@ export const loadIframe = options => {
               });
             }).catch(error => {
               clearTimeout(renderTimeoutId);
-              reject(`Extension initialization failed: ${error.message}`);
+              reject(error);
             });
           });
         },
@@ -135,13 +131,16 @@ export const loadIframe = options => {
     });
 
     penpalConnection.promise.then(() => {
-      clearTimeout(connectionTimeoutId);
       renderTimeoutId = setTimeout(() => {
         reject(ERROR_CODES.RENDER_TIMEOUT);
         destroy();
       }, renderTimeoutDuration);
     }, error => {
-      reject(`Connection failed: ${error}`);
+      if (error.code === Penpal.ERR_CONNECTION_TIMEOUT) {
+        reject(ERROR_CODES.CONNECTION_TIMEOUT);
+      } else {
+        reject(error);
+      }
     });
 
     destroy = () => {

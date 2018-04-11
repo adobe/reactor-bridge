@@ -129,7 +129,7 @@ describe('parent', () => {
     bridge.promise.then(
       () => {},
       error => {
-        expect(error).toBe('Extension initialization failed: bad things');
+        expect(error.message).toBe('bad things');
         done();
       }
     );

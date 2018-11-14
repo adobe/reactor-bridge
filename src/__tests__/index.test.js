@@ -10,15 +10,12 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-import Promise from 'promise-polyfill';
-import { loadIframe, setPromise, setDebug, ERROR_CODES } from '../parent';
+import { loadIframe, setDebug, ERROR_CODES } from '../parent';
 
 describe('parent', () => {
   let bridge;
 
   beforeEach(() => {
-    // So that the tests can successfully run in IE.
-    setPromise(Promise);
     // Turn off debugging because individual test cases can set it to true.
     setDebug(false);
   });

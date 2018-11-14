@@ -2,7 +2,6 @@ const http = require('http');
 const connect = require('connect');
 const serveStatic = require('serve-static');
 const ip = require('ip');
-const path = require('path');
 const argv = require('yargs').argv;
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
@@ -16,7 +15,6 @@ const babel = require('rollup-plugin-babel');
  */
 const serveFixtures = () => {
   const childIframes = connect()
-    .use(serveStatic(path.join(require.resolve('promise-polyfill'), '..')))
     .use(serveStatic('dist'))
     .use(serveStatic('src/__tests__/fixtures'));
 
@@ -29,12 +27,6 @@ const webdriverConfig = {
 };
 
 const customLaunchers = {
-  'IE11 - Selenium Grid': {
-    base: 'WebDriver',
-    config: webdriverConfig,
-    browserName: 'internet explorer',
-    version: 11
-  },
   'Edge - Selenium Grid': {
     base: 'WebDriver',
     config: webdriverConfig,

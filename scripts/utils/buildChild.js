@@ -17,22 +17,20 @@ const path = require('path');
 const rollup = require('rollup');
 const resolve = require('rollup-plugin-node-resolve');
 const commonjs = require('rollup-plugin-commonjs');
-const uglify = require('rollup-plugin-uglify');
+const minify = require('rollup-plugin-babel-minify');
 const babel = require('rollup-plugin-babel');
 
 const childLoaderInputPath = path.resolve(__dirname, '../../src/childLoader.js');
 const childInputPath = path.resolve(__dirname, '../../src/child.js');
 const banner = fs.readFileSync('./copyrightBanner.txt', 'utf8');
 
-
 const plugins = [
   commonjs(),
   resolve(),
   babel(),
-  uglify({
-    output: {
-      preamble: banner
-    }
+  minify({
+    comments: false,
+    banner
   })
 ];
 

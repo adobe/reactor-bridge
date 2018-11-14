@@ -1,12 +1,10 @@
 {
   "presets": [
-    ["env", {
-      "browsers": ["last 2 versions", "ie >= 11"],
-      "modules": false
-    }]
-  ],
-  "plugins": [
-    "transform-object-rest-spread",
-    "external-helpers"
+    [
+      "@babel/preset-env",
+      {
+        "modules": false
+      }
+    ]
   ]
 }

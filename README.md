@@ -58,7 +58,7 @@ The extension bridge supports the following browsers:
 * Chrome (latest)
 * Safari (latest)
 * Firefox (latest)
-* Internet Explorer (11 and above)
+* Edge (latest)
  
 ## Licensing
 

@@ -16,7 +16,6 @@ const http = require('http');
 const connect = require('connect');
 const serveStatic = require('serve-static');
 const path = require('path');
-const redirects = require('redirects');
 const buildChild = require('./utils/buildChild');
 
 const rollup = require('rollup');
@@ -65,13 +64,16 @@ const serveSandboxChildFiles = () => {
 const serveSandboxParentFiles = () => {
   new Promise((resolve) => {
     const handleRequest = connect()
-      .use(redirects({
+      .use('/extensionbridge/extensionbridge-child.js', (req, res) => {
         // Lens will host extensionbridge-child.js inside an extensionbridge directory. Because of
-        // this, extensionbridge.js will load extensionbridge-child.js using the
-        // path /extensionbridge/extensionbridge-child.js so we mimic Lens paths
+        // this, extensionbridge.min.js will load extensionbridge-child.js using the
+        // path /extensionbridge/extensionbridge-child.js, so we mimic Lens paths
         // accordingly by providing this alias.
-        '/extensionbridge/:file': '/:file'
-      }))
+        res.writeHead(302, {
+          Location: '/extensionbridge-child.js'
+        });
+        res.end();
+      })
       // Serve extensionbridge-child.js
       .use(serveStatic(path.join(__dirname, '../sandbox/dist')))
       // Serve sandbox html + other resources.

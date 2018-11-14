@@ -11,7 +11,6 @@
  ****************************************************************************************/
 
 import Penpal from 'penpal';
-import Promise from 'promise-polyfill';
 import Logger from './utils/logger';
 import addStylesToPage from './utils/addStylesToPage';
 
@@ -22,8 +21,6 @@ const STYLES = `
 `;
 
 addStylesToPage(STYLES);
-
-Penpal.Promise = Promise;
 
 const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};

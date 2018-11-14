@@ -24,8 +24,6 @@
  * will load child v2 in qe and we can appropriately test.
  */
 
-import Promise from 'promise-polyfill';
-
 // Prevent double-loading of extension bridge.
 if (!window.extensionBridge) {
   const childPath = '/extensionbridge/extensionbridge-child.js';

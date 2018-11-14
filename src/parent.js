@@ -19,8 +19,6 @@ const RENDER_TIMEOUT_DURATION = 2000;
 const logger = new Logger('ExtensionBridge:Parent');
 const noop = () => {};
 
-let Promise = window.Promise;
-
 export const ERROR_CODES = {
   CONNECTION_TIMEOUT: 'connectionTimeout',
   RENDER_TIMEOUT: 'renderTimeout',
@@ -160,10 +158,6 @@ export const loadIframe = options => {
   };
 };
 
-export const setPromise = value => {
-  Promise = value;
-  Penpal.Promise = value;
-};
 export const setDebug = value => {
   Penpal.debug = value;
   Logger.enabled = value;

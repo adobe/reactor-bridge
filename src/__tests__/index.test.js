@@ -64,9 +64,9 @@ describe('parent', () => {
   });
 
 
-  it('proxies extension view API', done => {
+  it('proxies extension view API when values are returned', done => {
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/extensionViewApi.html`
+      url: `http://${location.hostname}:9800/extensionViewApiReturningValues.html`
     });
 
     bridge.promise.then(child => {
@@ -87,9 +87,32 @@ describe('parent', () => {
     });
   });
 
-  it('returns a rejected promise if validate returns a non-boolean', done => {
+  it('proxies extension view API when promises are returned', done => {
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/invalidReturns.html`
+      url: `http://${location.hostname}:9800/extensionViewApiReturningPromises.html`
+    });
+
+    bridge.promise.then(child => {
+      Promise.all([
+        child.init(),
+        child.validate(),
+        child.getSettings()
+      ]).then(result => {
+        expect(result).toEqual([
+          undefined,
+          false,
+          {
+            foo: 'bar'
+          }
+        ]);
+        done();
+      });
+    });
+  });
+
+  it('returns a rejected promise if validate returns a non-boolean value', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/invalidReturnsValues.html`
     });
 
     bridge.promise.then(child => {
@@ -98,6 +121,57 @@ describe('parent', () => {
         error => {
           expect(error.message)
             .toContain('The extension attempted to return a non-boolean value from validate');
+          done();
+        }
+      );
+    });
+  });
+
+  it('returns a rejected promise if getSettings returns a non-object value', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/invalidReturnsValues.html`
+    });
+
+    bridge.promise.then(child => {
+      child.getSettings().then(
+        () => {},
+        error => {
+          expect(error.message)
+            .toContain('The extension attempted to return a non-object value from getSettings');
+          done();
+        }
+      );
+    });
+  });
+
+  it('returns a rejected promise if validate returns a non-boolean promise', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/invalidReturnsPromises.html`
+    });
+
+    bridge.promise.then(child => {
+      child.validate().then(
+        () => {},
+        error => {
+          expect(error.message)
+            .toContain('The extension attempted to return a non-boolean value from validate');
+          done();
+        }
+      );
+    });
+  });
+
+  it('returns a rejected promise if getSettings returns a non-object promise', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/invalidReturnsPromises.html`
+    });
+
+    bridge.promise.then(child => {
+      child.getSettings().then(
+        () => {},
+        error => {
+          expect(error.message)
+            .toContain('The extension attempted to return a non-object value from getSettings');
           done();
         }
       );

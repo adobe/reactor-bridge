@@ -40,23 +40,30 @@ const init = (...args) => {
 };
 
 const validate = (...args) => {
-  const result = getExtensionViewMethod('validate')(...args);
+  return Promise.resolve(getExtensionViewMethod('validate')(...args)).then(
+    result => {
+      if (typeof result !== 'boolean') {
+        throw new Error(`The extension attempted to return a non-boolean value from validate: ${result}`);
+      }
 
-  if (typeof result !== 'boolean') {
-    throw new Error(`The extension attempted to return a non-boolean value from validate: ${result}`);
-  }
-
-  return result;
+      return result;
+    }
+  );
 };
 
 const getSettings = function(...args) {
-  const result = getExtensionViewMethod('getSettings')(...args);
+  return Promise.resolve(getExtensionViewMethod('getSettings')(...args)).then(
+    result => {
+      if (typeof result !== 'object') {
+        throw new Error(
+          'The extension attempted to return a non-object value from getSettings: ' +
+          result
+        );
+      }
 
-  if (typeof result !== 'object') {
-    throw new Error('The extension attempted to return a non-object value from getSettings: ' + result);
-  }
-
-  return result;
+      return result;
+    }
+  );
 };
 
 const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {

@@ -14,6 +14,7 @@ import Penpal from 'penpal';
 import Logger from './utils/logger';
 
 const CONNECTION_TIMEOUT_DURATION = 10000;
+const PROMISE_TIMEOUT = 10000;
 const RENDER_TIMEOUT_DURATION = 2000;
 
 const logger = new Logger('ExtensionBridge:Parent');
@@ -115,8 +116,32 @@ export const loadIframe = options => {
                 // the sandbox tool's benefit so a developer testing their extension view can
                 // initialize multiple times with different info.
                 init: child.init,
-                validate: child.validate,
-                getSettings: child.getSettings
+                validate: (...args) =>
+                  Promise.race([
+                    new Promise((_, reject) => {
+                      setTimeout(() => {
+                        reject(
+                          'A timeout occurred because the extension took longer than ' +
+                            PROMISE_TIMEOUT / 1000 +
+                            ' seconds to return the validation result.'
+                        );
+                      }, PROMISE_TIMEOUT);
+                    }),
+                    child.validate(...args),
+                  ]),
+                getSettings: (...args) =>
+                  Promise.race([
+                    new Promise((_, reject) => {
+                      setTimeout(() => {
+                        reject(
+                          'A timeout occurred because the extension took longer than ' +
+                            PROMISE_TIMEOUT / 1000 +
+                            ' seconds to return the settings. '
+                        );
+                      }, PROMISE_TIMEOUT);
+                    }),
+                    child.getSettings(...args),
+                  ]),
               });
             }).catch(error => {
               clearTimeout(renderTimeoutId);

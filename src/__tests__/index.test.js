@@ -302,4 +302,38 @@ describe('parent', () => {
 
     expect(console.log).toHaveBeenCalledWith('[Penpal]', 'Parent: Loading iframe');
   });
+
+  it('times out if extension get settings doesn\'t respond in timely manner', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`,
+      extensionResponseTimeoutDuration: 100
+    });
+
+    bridge.promise.then(child => {
+      child.getSettings().then(
+        () => {},
+        error => {
+          expect(error).toBe('extensionResponseTimeout');
+          done();
+        }
+      );
+    });
+  });
+
+  it('times out if extension validate doesn\'t respond in timely manner', done => {
+    bridge = loadIframe({
+      url: `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`,
+      extensionResponseTimeoutDuration: 100
+    });
+
+    bridge.promise.then(child => {
+      child.validate().then(
+        () => {},
+        error => {
+          expect(error).toBe('extensionResponseTimeout');
+          done();
+        }
+      );
+    });
+  });
 });

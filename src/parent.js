@@ -14,7 +14,7 @@ import Penpal from 'penpal';
 import Logger from './utils/logger';
 
 const CONNECTION_TIMEOUT_DURATION = 10000;
-const PROMISE_TIMEOUT = 10000;
+const EXTENSION_RESPONSE_TIMEOUT_DURATION = 10000;
 const RENDER_TIMEOUT_DURATION = 2000;
 
 const logger = new Logger('ExtensionBridge:Parent');
@@ -23,6 +23,7 @@ const noop = () => {};
 export const ERROR_CODES = {
   CONNECTION_TIMEOUT: 'connectionTimeout',
   RENDER_TIMEOUT: 'renderTimeout',
+  EXTENSION_RESPONSE_TIMEOUT: 'extensionResponseTimeout',
   DESTROYED: 'destroyed'
 };
 
@@ -61,6 +62,10 @@ export const ERROR_CODES = {
  * that must pass while attempting to render the iframe before rejecting the returned promise
  * with a RENDER_TIMEOUT error code. This duration begins after communication with the iframe
  * has been established.
+ * @param {number} [options.extensionResponseTimeoutDuration=10000] The amount of time, in
+ * milliseconds, that must pass while attempting to receive response from extension validate
+ * or getSettings methods before rejecting the returned promise with a EXTENSION_RESPONSE_TIMEOUT
+ * error code.
  * @param {Function} [options.openCodeEditor] The function to call when the extension view requests
  * that the code editor should open. The function may be passed existing code and should return
  * a promise to be resolved with updated code.
@@ -79,6 +84,7 @@ export const loadIframe = options => {
     container = document.body,
     connectionTimeoutDuration = CONNECTION_TIMEOUT_DURATION,
     renderTimeoutDuration = RENDER_TIMEOUT_DURATION,
+    extensionResponseTimeoutDuration = EXTENSION_RESPONSE_TIMEOUT_DURATION,
     openCodeEditor = noop,
     openRegexTester = noop,
     openDataElementSelector = noop,
@@ -120,12 +126,8 @@ export const loadIframe = options => {
                   Promise.race([
                     new Promise((_, reject) => {
                       setTimeout(() => {
-                        reject(
-                          'A timeout occurred because the extension took longer than ' +
-                            PROMISE_TIMEOUT / 1000 +
-                            ' seconds to return the validation result.'
-                        );
-                      }, PROMISE_TIMEOUT);
+                        reject(ERROR_CODES.EXTENSION_RESPONSE_TIMEOUT);
+                      }, extensionResponseTimeoutDuration);
                     }),
                     child.validate(...args),
                   ]),
@@ -133,12 +135,8 @@ export const loadIframe = options => {
                   Promise.race([
                     new Promise((_, reject) => {
                       setTimeout(() => {
-                        reject(
-                          'A timeout occurred because the extension took longer than ' +
-                            PROMISE_TIMEOUT / 1000 +
-                            ' seconds to return the settings. '
-                        );
-                      }, PROMISE_TIMEOUT);
+                        reject(ERROR_CODES.EXTENSION_RESPONSE_TIMEOUT);
+                      }, extensionResponseTimeoutDuration);
                     }),
                     child.getSettings(...args),
                   ]),

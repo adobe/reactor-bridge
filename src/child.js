@@ -10,8 +10,7 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-import Penpal from 'penpal';
-import Logger from './utils/logger';
+import connectToParent from 'penpal/lib/connectToParent';
 import addStylesToPage from './utils/addStylesToPage';
 
 const STYLES = `
@@ -22,7 +21,6 @@ const STYLES = `
 
 addStylesToPage(STYLES);
 
-const logger = new Logger('ExtensionBridge:Child');
 let extensionViewMethods = {};
 let connectionPromise;
 
@@ -92,7 +90,7 @@ const wrapOpenSharedViewMethod = (methodName, sharedViewName) => (...args) => {
   });
 };
 
-connectionPromise = Penpal.connectToParent({
+connectionPromise = connectToParent({
   methods: {
     init,
     validate,
@@ -109,11 +107,6 @@ const extensionBridge = {
       ...methods
     };
     connectionPromise.then(parent => parent.extensionRegistered());
-    logger.log('Methods registered by extension.');
-  },
-  setDebug(value) {
-    Penpal.debug = value;
-    Logger.enabled = value;
   }
 };
 

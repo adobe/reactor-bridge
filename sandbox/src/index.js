@@ -10,14 +10,17 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-import { loadIframe, setDebug } from '../../src/parent';
-
-setDebug(true);
+import { loadIframe } from '../../src/parent';
 
 const noop = () => {};
 
+const iframe = document.createElement('iframe');
+iframe.src = window.location.protocol + '//localhost:9800/iframe.html';
+document.getElementById('iframeHolder').appendChild(iframe);
+
 loadIframe({
-  url: '//localhost:9800/iframe.html',
+  iframe,
+  debug: true,
   container: document.getElementById('iframeHolder'),
   extensionInitOptions: {},
   openCodeEditor: noop,

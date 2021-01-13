@@ -3,9 +3,9 @@ const connect = require('connect');
 const serveStatic = require('serve-static');
 const ip = require('ip');
 const argv = require('yargs').argv;
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const babel = require('rollup-plugin-babel');
+const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
+const commonjs = require('@rollup/plugin-commonjs');
+const babel = require('@rollup/plugin-babel').babel;
 
 /**
  * We're going to serve fixtures (our mock extension views) from a port that's different from
@@ -69,7 +69,7 @@ module.exports = function(config) {
       plugins: [
         commonjs(),
         resolve(),
-        babel()
+        babel({ babelHelpers: 'bundled' })
       ],
       output: {
         format: 'iife',

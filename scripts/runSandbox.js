@@ -19,9 +19,9 @@ const path = require('path');
 const buildChild = require('./utils/buildChild');
 
 const rollup = require('rollup');
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const babel = require('rollup-plugin-babel');
+const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
+const commonjs = require('@rollup/plugin-commonjs');
+const babel = require('@rollup/plugin-babel').babel;
 
 const IFRAME_PORT = 9800;
 const SANDBOX_PORT = 9801;

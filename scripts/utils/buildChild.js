@@ -15,19 +15,21 @@
 const fs = require('fs-extra');
 const path = require('path');
 const rollup = require('rollup');
-const resolve = require('rollup-plugin-node-resolve');
-const commonjs = require('rollup-plugin-commonjs');
-const minify = require('rollup-plugin-babel-minify');
-const babel = require('rollup-plugin-babel');
+const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
+const commonjs = require('@rollup/plugin-commonjs');
+const minify = require('babel-preset-minify');
+const babel = require('@rollup/plugin-babel').babel;
 
 const childLoaderInputPath = path.resolve(__dirname, '../../src/childLoader.js');
 const childInputPath = path.resolve(__dirname, '../../src/child.js');
 const banner = fs.readFileSync('./copyrightBanner.txt', 'utf8');
 
 const plugins = [
-  commonjs(),
+  commonjs({transformMixedEsModules:true}),
   resolve(),
-  babel(),
+  babel({
+    babelHelpers: 'bundled'
+  }),
   minify({
     comments: false,
     banner

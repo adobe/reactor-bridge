@@ -10,30 +10,33 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-import { loadIframe, setDebug, ERROR_CODES } from '../parent';
+import { loadIframe, ERROR_CODES } from '../parent';
 
 describe('parent', () => {
   let bridge;
+  let iframe;
 
   beforeEach(() => {
-    // Turn off debugging because individual test cases can set it to true.
-    setDebug(false);
+    iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
   });
 
   afterEach(() => {
     if (bridge) {
       bridge.destroy();
     }
+    if (document.body.contains(iframe)) {
+      document.body.removeChild(iframe);
+    }
   });
 
-  it('loads an iframe and provides API', done => {
+  it('provides a bridge API', done => {
+    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`
+      iframe
     });
 
-    expect(bridge.iframe).toEqual(jasmine.any(HTMLIFrameElement));
     expect(bridge.destroy).toEqual(jasmine.any(Function));
-
     bridge.promise.then(child => {
       expect(child.init).toEqual(jasmine.any(Function));
       expect(child.validate).toEqual(jasmine.any(Function));
@@ -42,31 +45,10 @@ describe('parent', () => {
     });
   });
 
-  it('loads an iframe into specified container', () => {
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`,
-      container
-    });
-
-    expect(container.querySelector('iframe')).toBe(bridge.iframe);
-  });
-
-  it('sets sandbox attribute on iframe', () => {
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`,
-    });
-
-    expect(bridge.iframe.getAttribute('sandbox'))
-      .toBe('allow-same-origin allow-scripts allow-popups');
-  });
-
-
   it('proxies extension view API when values are returned', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionViewApiReturningValues.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/extensionViewApiReturningValues.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -88,8 +70,9 @@ describe('parent', () => {
   });
 
   it('proxies extension view API when promises are returned', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionViewApiReturningPromises.html`
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/extensionViewApiReturningPromises.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -111,8 +94,9 @@ describe('parent', () => {
   });
 
   it('returns a rejected promise if validate returns a non-boolean value', done => {
+    iframe.src = `http://${location.hostname}:9800/invalidReturnsValues.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/invalidReturnsValues.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -128,8 +112,9 @@ describe('parent', () => {
   });
 
   it('returns a rejected promise if getSettings returns a non-object value', done => {
+    iframe.src = `http://${location.hostname}:9800/invalidReturnsValues.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/invalidReturnsValues.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -145,8 +130,9 @@ describe('parent', () => {
   });
 
   it('returns a rejected promise if validate returns a non-boolean promise', done => {
+    iframe.src = `http://${location.hostname}:9800/invalidReturnsPromises.html`
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/invalidReturnsPromises.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -162,8 +148,9 @@ describe('parent', () => {
   });
 
   it('returns a rejected promise if getSettings returns a non-object promise', done => {
+    iframe.src = `http://${location.hostname}:9800/invalidReturnsPromises.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/invalidReturnsPromises.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -179,8 +166,9 @@ describe('parent', () => {
   });
 
   it('times out if extension view doesn\'t register with bridge', done => {
+    iframe.src = `http://${location.hostname}:9800/unregisteredInit.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/unregisteredInit.html`
+      iframe
     });
 
     bridge.promise.then(
@@ -193,8 +181,9 @@ describe('parent', () => {
   });
 
   it('rejects load promise if extension view init function throws an error', done => {
+    iframe.src = `http://${location.hostname}:9800/initFailure.html`
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/initFailure.html`
+      iframe
     });
 
     bridge.promise.then(
@@ -208,8 +197,9 @@ describe('parent', () => {
 
   it('returns a rejected promise if extension view has not registered ' +
       'getSettings (or validate) function', done => {
+    iframe.src = `http://${location.hostname}:9800/unregisteredGetSettings.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/unregisteredGetSettings.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -226,10 +216,11 @@ describe('parent', () => {
   });
 
   it('proxies lens API', done => {
+    iframe.src = `http://${location.hostname}:9800/lensApi.html`;
     const addResultSuffix = options => options.testOption + ' result';
 
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/lensApi.html`,
+      iframe,
       openCodeEditor: addResultSuffix,
       openRegexTester: addResultSuffix,
       openDataElementSelector: addResultSuffix
@@ -251,8 +242,9 @@ describe('parent', () => {
   it('rejects promise when connection fails', done => {
     jasmine.clock().install();
 
+    iframe.src = `http://${location.hostname}:9800/connectionFailure.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/connectionFailure.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -267,8 +259,9 @@ describe('parent', () => {
   });
 
   it('rejects promise when destroyed', done => {
+    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`
+      iframe
     });
 
     bridge.promise.then(child => {
@@ -281,31 +274,23 @@ describe('parent', () => {
     bridge.destroy();
   });
 
-  it('removes iframe when destroyed', () => {
-    bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`
-    });
-
-    bridge.destroy();
-
-    expect(bridge.iframe.parentNode).toBeNull();
-  });
-
-  it('allows debugging to be enabled', () => {
+  it('allows debugging to be enabled', (done) => {
     spyOn(console, 'log');
 
-    setDebug(true);
-
+    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/simpleSuccess.html`
+      iframe,
+      debug: true
     });
 
-    expect(console.log).toHaveBeenCalledWith('[Penpal]', 'Parent: Loading iframe');
+    expect(console.log).toHaveBeenCalledWith('[Penpal]', 'Parent: Awaiting handshake');
+    bridge.promise.then(done);
   });
 
   it('times out if extension get settings doesn\'t respond in timely manner', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`,
+      iframe,
       extensionResponseTimeoutDuration: 100
     });
 
@@ -321,8 +306,9 @@ describe('parent', () => {
   });
 
   it('times out if extension validate doesn\'t respond in timely manner', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`;
     bridge = loadIframe({
-      url: `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`,
+      iframe,
       extensionResponseTimeoutDuration: 100
     });
 

@@ -6,11 +6,11 @@ Launch, by Adobe, is a next-generation tag management solution enabling simplifi
 
 When a Launch user is configuring extensions, rules, and data elements within the Launch UI, the Launch UI presents an extension's view within an iframe. This project provides the communication layer between the Launch UI and extension views for storage and retrieval of settings, validation, etc. It does so by exposing a simplified, abstracted API while leveraging the native `postMessage` browser API under the hood.
 
-For more information about developing an extension for Launch, please visit our [extension development guide](https://developer.adobelaunch.com/guides/extensions/).
+For more information about developing an extension for Launch, please visit our [extension development guide](https://experienceleague.adobe.com/docs/launch/using/extension-dev/overview.html#extension-dev).
 
 ## Usage
 
-The Launch UI consumes the bridge via the `@adobe/reactor-bridge` npm package while extension views consume the bridge by loading a CDN-hosted script as described in the [extension development guide](https://developer.adobelaunch.com/guides/extensions/views/).
+The Launch UI consumes the bridge via the `@adobe/reactor-bridge` npm package while extension views consume the bridge by loading a CDN-hosted script as described in the [extension development guide](https://experienceleague.adobe.com/docs/launch/using/extension-dev/overview.html#extension-dev).
 
 The communication layer consists three different pieces:
 

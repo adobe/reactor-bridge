@@ -6,6 +6,7 @@ name: ci
 on:
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -26,4 +27,4 @@ jobs:
     - name: Install dependencies
       if: steps.npm-cache.outputs.cache-hit != 'true'
       run: npm ci
-    - run: npm test
+    - run: npm run test:ci

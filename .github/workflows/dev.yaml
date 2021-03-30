@@ -15,10 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 14.x
-      uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
     - uses: actions/cache@v2
       id: npm-cache
       with:
@@ -27,4 +23,14 @@ jobs:
     - name: Install dependencies
       if: steps.npm-cache.outputs.cache-hit != 'true'
       run: npm ci
+    - uses: saucelabs/sauce-connect-action@v1
+      with:
+        username: ${{ secrets.SAUCE_USERNAME }}
+        accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+        noSSLBumpDomains: all
+        noProxyCaching: true
+        tunnelIdentifier: github-action-tunnel
     - run: npm test
+      env:
+        SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+        SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}

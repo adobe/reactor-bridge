@@ -6,6 +6,7 @@ const argv = require('yargs').argv;
 const resolve = require('@rollup/plugin-node-resolve').nodeResolve;
 const commonjs = require('@rollup/plugin-commonjs');
 const babel = require('@rollup/plugin-babel').babel;
+const packageDescriptor = require('./package.json');
 
 /**
  * We're going to serve fixtures (our mock extension views) from a port that's different from
@@ -21,26 +22,87 @@ const serveFixtures = () => {
   http.createServer(childIframes).listen(9800);
 };
 
-const webdriverConfig = {
-  hostname: '10.51.16.127',
-  port: 4444
-};
+let startConnect = false;
+let reporters = ['dots'];
+let buildId;
+let defaultBrowsers = ['Chrome', 'Firefox'];
+
+if (process.env.CI) {
+  buildId =
+    'CI #' +
+    process.env.GITHUB_RUN_NUMBER +
+    ' (' +
+    process.env.GITHUB_RUN_ID +
+    ')';
+
+  defaultBrowsers = [
+    'SL_EDGE',
+    'SL_CHROME',
+    'SL_FIREFOX',
+    'SL_ANDROID',
+    'SL_SAFARI'
+  ];
+  reporters.push('saucelabs');
+} else {
+  startConnect = true;
+}
+
+if (process.env.SAUCE_USERNAME) {
+  reporters.push('saucelabs');
+}
 
 const customLaunchers = {
-  'Edge - Selenium Grid': {
-    base: 'WebDriver',
-    config: webdriverConfig,
-    browserName: 'MicrosoftEdge'
+  SL_CHROME: {
+    base: 'SauceLabs',
+      browserName: 'chrome',
+      browserVersion: 'latest',
+      platformName: 'Windows 10'
   },
-  'Chrome - Selenium Grid': {
-    base: 'WebDriver',
-    config: webdriverConfig,
-    browserName: 'chrome'
+  SL_FIREFOX: {
+    base: 'SauceLabs',
+      browserName: 'firefox',
+      browserVersion: 'latest',
+      platformName: 'Windows 10'
   },
-  'Firefox - Selenium Grid': {
-    base: 'WebDriver',
-    config: webdriverConfig,
-    browserName: 'firefox'
+  SL_SAFARI: {
+    base: 'SauceLabs',
+      browserName: 'safari',
+      browserVersion: 'latest',
+      platformName: 'macOS 10.15'
+  },
+  SL_IE10: {
+    base: 'SauceLabs',
+      browserName: 'internet explorer',
+      platformName: 'Windows 7',
+      browserVersion: '10'
+  },
+  SL_IE11: {
+    base: 'SauceLabs',
+      browserName: 'internet explorer',
+      platformName: 'Windows 7',
+      browserVersion: '11'
+  },
+  SL_EDGE: {
+    base: 'SauceLabs',
+      browserName: 'MicrosoftEdge',
+      browserVersion: 'latest',
+      platformName: 'Windows 10'
+  },
+  SL_IOS: {
+    base: 'SauceLabs',
+      deviceName: 'iPhone X Simulator',
+      appiumVersion: '1.19.1',
+      browserName: 'Safari',
+      platformName: 'iOS',
+      platformVersion: '14.0'
+  },
+  SL_ANDROID: {
+    base: 'SauceLabs',
+      deviceName: 'Android GoogleAPI Emulator',
+      appiumVersion: '1.18.1',
+      browserName: 'Chrome',
+      platformName: 'Android',
+      platformVersion: '11.0'
   }
 };
 
@@ -76,15 +138,33 @@ module.exports = function(config) {
         name: 'bridge'
       }
     },
-    reporters: ['dots'],
+    reporters: reporters,
     hostname: ip.address(),
+    // base path that will be used to resolve all patterns (eg. files, exclude)
+    basePath: '',
     port: 9801,
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    customLaunchers,
-    browsers: argv.ci ? Object.keys(customLaunchers) : ['Chrome', 'Firefox'],
+    customLaunchers: customLaunchers,
+    browsers: defaultBrowsers,
     singleRun: true,
-    concurrency: Infinity
+    sauceLabs: {
+      buildId: buildId,
+      testName: packageDescriptor.name + ' Test',
+      tunnelIdentifier: 'github-action-tunnel',
+      startConnect: startConnect,
+      retryLimit: 3,
+      idleTimeout: 360,
+      recordVideo: false,
+      recordScreenshots: false,
+      // https://support.saucelabs.com/hc/en-us/articles/115010079868-Issues-with-Safari-and-Karma-Test-Runner
+      connectOptions: {
+        noSslBumpDomains: 'all'
+      }
+    },
+    // Concurrency level
+    // how many browser should be started simultaneous
+    concurrency: 5,
   });
 };

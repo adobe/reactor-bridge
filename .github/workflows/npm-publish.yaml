@@ -24,7 +24,17 @@ jobs:
       - name: Install dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
+      - uses: saucelabs/sauce-connect-action@v1
+        with:
+          username: ${{ secrets.SAUCE_USERNAME }}
+          accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
+          noSSLBumpDomains: all
+          noProxyCaching: true
+          tunnelIdentifier: github-action-tunnel
       - run: npm test
+        env:
+          SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
+          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.ADOBE_BOT_NPM_TOKEN}}

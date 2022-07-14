@@ -1,16 +1,16 @@
-# Experience Platform Tags Extension Bridge
+# Adobe Experience Platform Tags Extension Bridge
 
 [![npm (scoped with tag)](https://img.shields.io/npm/v/@adobe/reactor-bridge.svg?style=flat)](https://www.npmjs.com/package/@adobe/reactor-bridge)
 
-Experience Platform Tags, by Adobe, is a next-generation tag management solution enabling simplified deployment of marketing technologies. For more information regarding Experience Platform Tags, please visit our [product website](http://www.adobe.com/enterprise/cloud-platform/launch.html).
+Adobe Experience Platform Tags is a next-generation tag management solution enabling simplified deployment of marketing technologies. For more information regarding Experience Platform Tags, please visit our [product website](http://www.adobe.com/enterprise/cloud-platform/launch.html).
 
-When an Experience Platform Tags user is configuring extensions, rules, and data elements within the Tags UI, the UI presents an extension's view within an iframe. This project provides the communication layer between the Experience Platform Tags UI and extension views for storage and retrieval of settings, validation, etc. It does so by exposing a simplified, abstracted API while leveraging the native `postMessage` browser API under the hood.
+When a Tags user configures extensions, rules, and data elements within the Tags UI, the UI presents an extension's view within an iframe. This project provides the communication layer between the Tags UI and extension views for storage and retrieval of settings, validation, etc. It does so by exposing a simplified, abstracted API while leveraging the native `postMessage` browser API under the hood.
 
-For more information about developing an extension for Experience Platform Tags, please visit our [extension development guide](https://experienceleague.adobe.com/docs/experience-platform/tags/extension-dev/overview.html?lang=en).
+For more information about developing an extension for Experience Platform Tags, please visit our [extension development guide](https://experienceleague.adobe.com/docs/experience-platform/tags/extension-dev/overview.html).
 
 ## Usage
 
-The Experience Platform Tags UI consumes the bridge via the `@adobe/reactor-bridge` npm package while extension views consume the bridge by loading a CDN-hosted script as described in the [extension development guide](https://experienceleague.adobe.com/docs/experience-platform/tags/extension-dev/overview.html?lang=en).
+The Tags UI consumes the bridge via the `@adobe/reactor-bridge` npm package while extension views consume the bridge by loading a CDN-hosted script as described in the [extension development guide](https://experienceleague.adobe.com/docs/experience-platform/tags/extension-dev/overview.html).
 
 The communication layer consists three different pieces:
 
@@ -20,7 +20,7 @@ The communication layer consists three different pieces:
   
   The arguments, return value, and behavior of `loadIframe` can be found within the code documentation in `parent.js`.
 
-* **Child (dist/extensionbridge-child.js):** This is the portion of the communication layer that extension views use, though extension views don't load it directly (see Child Loader). This file is hosted by the Experience Platform Tags UI which means it may be different based on the environment. This is important since it needs to be compatible with the Parent that is being used by the Tags UI in the same environment.
+* **Child (dist/extensionbridge-child.js):** This is the portion of the communication layer that extension views use, though extension views don't load it directly (see Child Loader). This file is hosted by the Tags UI which means it may be different based on the environment. This is important since it needs to be compatible with the Parent that is being used by the Tags UI in the same environment.
 * **Child Loader (dist/extensionbridge.js):** This loads Child. Child Loader will be loaded by extensions via a `script` tag. Extensions will always load the same Child Loader regardless of the environment they are running in. Child Loader then loads the environment-specific Child.
 
 ## Contributing

@@ -1,16 +1,16 @@
 {
   "name": "@adobe/reactor-bridge",
   "version": "11.0.1",
-  "description": "Communication API between the Launch UI (Lens) and extension views.",
+  "description": "Communication API between the Tags UI (Lens) and extension views.",
   "author": {
-    "name": "Adobe Systems",
+    "name": "Adobe",
     "url": "http://adobe.com",
     "email": "reactor@adobe.com"
   },
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Adobe-Marketing-Cloud/reactor-bridge.git"
+    "url": "git@github.com:adobe/reactor-bridge.git"
   },
   "scripts": {
     "build:child": "./scripts/buildChild.js",

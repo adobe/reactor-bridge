@@ -45,6 +45,21 @@ describe('parent', () => {
     });
   });
 
+  it('nested bridge API provided', done => {
+    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html?bridgepath=/source/nested-app/`;
+    bridge = loadIframe({
+      iframe
+    });
+
+    expect(bridge.destroy).toEqual(jasmine.any(Function));
+    bridge.promise.then(child => {
+      expect(child.init).toEqual(jasmine.any(Function));
+      expect(child.validate).toEqual(jasmine.any(Function));
+      expect(child.getSettings).toEqual(jasmine.any(Function));
+      done();
+    });
+  });
+
   it('proxies extension view API when values are returned', done => {
     iframe.src = `http://${location.hostname}:9800/extensionViewApiReturningValues.html`;
     bridge = loadIframe({

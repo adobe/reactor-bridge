@@ -26,7 +26,11 @@
 
 // Prevent double-loading of extension bridge.
 if (!window.extensionBridge) {
-  const childPath = '/extensionbridge/extensionbridge-child.js';
+  const injectedPath = (new URLSearchParams(window.location.search)).get('bridgepath') || '';
+  // Matches strings that start with '/' then have alpha chars or dashes followed by an optional '/' repeatedly.
+  // The string must end with '/'
+  const sanitizedPath = injectedPath.match(/^\/(([a-z]|[A-Z]|-+)+\/*)+[\/]$/) ? injectedPath : '/';
+  const childPath = sanitizedPath + 'extensionbridge/extensionbridge-child.js';
 
   const bridge = window.extensionBridge = {
     _callQueue: []
@@ -58,7 +62,7 @@ if (!window.extensionBridge) {
         args,
         resolve,
         reject
-      })
+      });
     });
   });
 

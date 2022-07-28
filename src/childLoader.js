@@ -32,6 +32,7 @@ if (!window.extensionBridge) {
     _callQueue: []
   };
 
+  // test saucelabs
   const anchor = document.createElement('a');
   anchor.href = document.referrer;
 

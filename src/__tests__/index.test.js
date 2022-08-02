@@ -45,7 +45,7 @@ describe('parent', () => {
     });
   });
 
-  it('nested bridge API provided', done => {
+  it('bridgepath is properly set and the iframe loads with a functional bridge API', done => {
     iframe.src = `http://${location.hostname}:9800/simpleSuccess.html?bridgepath=/source/nested-app/`;
     bridge = loadIframe({
       iframe

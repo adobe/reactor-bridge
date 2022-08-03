@@ -46,17 +46,74 @@ describe('parent', () => {
   });
 
   it('bridgepath is properly set and the iframe loads with a functional bridge API', done => {
-    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html?bridgepath=/source/nested-app/`;
+    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/nested-app/`;
     bridge = loadIframe({
       iframe
     });
 
     expect(bridge.destroy).toEqual(jasmine.any(Function));
     bridge.promise.then(child => {
-      expect(child.init).toEqual(jasmine.any(Function));
+    expect(child.init).toEqual(jasmine.any(Function));
       expect(child.validate).toEqual(jasmine.any(Function));
       expect(child.getSettings).toEqual(jasmine.any(Function));
-      done();
+      child.getSettings().then(({childScriptPath})=>{
+        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/source/nested-app/extensionbridge/extensionbridge-child.js`);
+        done();
+      });
+    });
+  });
+
+  it('bridgepath contains dots child script defaults to root of parent', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/../../../nested-app/`;
+    bridge = loadIframe({
+      iframe
+    });
+
+    expect(bridge.destroy).toEqual(jasmine.any(Function));
+    bridge.promise.then(child => {
+    expect(child.init).toEqual(jasmine.any(Function));
+      expect(child.validate).toEqual(jasmine.any(Function));
+      expect(child.getSettings).toEqual(jasmine.any(Function));
+      child.getSettings().then(({childScriptPath})=>{
+        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
+        done();
+      });
+    });
+  });
+
+  it('bridgepath contains * child script defaults to root of parent', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/*nested-app/`;
+    bridge = loadIframe({
+      iframe
+    });
+
+    expect(bridge.destroy).toEqual(jasmine.any(Function));
+    bridge.promise.then(child => {
+    expect(child.init).toEqual(jasmine.any(Function));
+      expect(child.validate).toEqual(jasmine.any(Function));
+      expect(child.getSettings).toEqual(jasmine.any(Function));
+      child.getSettings().then(({childScriptPath})=>{
+        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
+        done();
+      });
+    });
+  });
+
+  it('bridgepath does not start with / child script defaults to root of parent', done => {
+    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=source/nested-app/`;
+    bridge = loadIframe({
+      iframe
+    });
+
+    expect(bridge.destroy).toEqual(jasmine.any(Function));
+    bridge.promise.then(child => {
+    expect(child.init).toEqual(jasmine.any(Function));
+      expect(child.validate).toEqual(jasmine.any(Function));
+      expect(child.getSettings).toEqual(jasmine.any(Function));
+      child.getSettings().then(({childScriptPath})=>{
+        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
+        done();
+      });
     });
   });
 

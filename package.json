@@ -1,6 +1,6 @@
 {
   "name": "@adobe/reactor-bridge",
-  "version": "11.0.1",
+  "version": "12.0.0",
   "description": "Communication API between the Tags UI (Lens) and extension views.",
   "author": {
     "name": "Adobe",

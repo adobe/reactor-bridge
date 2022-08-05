@@ -4,16 +4,24 @@
 name: Node.js Package
 
 on:
-  release:
-    types: [created]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to publish to: latest | next'
+        required: false
+        default: 'latest'
 
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
+      - name: Check Tag Name
+        if: ${{ github.event.inputs.tag != 'latest' && github.event.inputs.tag != 'next' }}
+        run: |
+          echo 'Only the tags "latest" or "next" are supported. You entered "${{ github.event.inputs.tag }}"'
+          exit 1
       - uses: actions/checkout@v2
-      - name: Use Node.js 14.x
-        uses: actions/setup-node@v1
+      - uses: actions/setup-node@v1
         with:
           node-version: 14.x
       - uses: actions/cache@v2
@@ -28,13 +36,12 @@ jobs:
         with:
           username: ${{ secrets.SAUCE_USERNAME }}
           accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          noSSLBumpDomains: all
-          noProxyCaching: true
           tunnelIdentifier: github-action-tunnel
       - run: npm test
         env:
           SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
           SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.ADOBE_BOT_NPM_TOKEN}}
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.ADOBE_BOT_NPM_TOKEN }}
+          tag: ${{ github.event.inputs.tag }}

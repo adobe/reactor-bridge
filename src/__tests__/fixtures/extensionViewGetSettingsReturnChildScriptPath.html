@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Iframe</title>
+    <script src="extensionbridge.min.js"></script>
+    <script>
+      extensionBridge.register({
+        init: function(info) { },
+        validate: function() { return true; },
+        getSettings: function() { 
+          return {
+            childScriptPath: document.head.querySelector('script').getAttribute('src')
+          };
+        }
+      });
+    </script>
+  </head>
+  <body>
+    Iframe
+  </body>
+</html>

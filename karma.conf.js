@@ -118,11 +118,13 @@ module.exports = function(config) {
       // Re-run tests when dist files change (the fixtures use these).
       { pattern: 'dist/*', watched: true, included: false, served: true },
     ],
-    // We use this proxy so that when extensionbridge.min.js loads
-    // /extensionbridge/extensionbridge-child.js (which is the path Lens serves
-    // extensionbridge-child.js from), the file will be found.
     proxies: {
-      '/extensionbridge/': '/base/dist/'
+      // We use this proxy so that when extensionbridge.min.js loads
+      // /extensionbridge/extensionbridge-child.js (which is the path Lens serves
+      // extensionbridge-child.js from), the file will be found.
+      '/extensionbridge/': '/base/dist/',
+      // This proxy is needed for the url parameter bridgepath to work.
+      '/source/nested-app/extensionbridge/': '/base/dist/'
     },
     preprocessors: {
       'src/__tests__/*.test.js': ['rollup']

@@ -38,8 +38,8 @@ if (process.env.CI) {
   defaultBrowsers = [
     'SL_EDGE',
     'SL_CHROME',
-    'SL_FIREFOX',
-    'SL_ANDROID',
+    // 'SL_FIREFOX',
+    // 'SL_ANDROID', // nuking for now
     'SL_SAFARI'
   ];
   reporters.push('saucelabs');
@@ -68,7 +68,7 @@ const customLaunchers = {
     base: 'SauceLabs',
       browserName: 'safari',
       browserVersion: 'latest',
-      platformName: 'macOS 10.15'
+      platformName: 'macOS 11'
   },
   SL_IE10: {
     base: 'SauceLabs',

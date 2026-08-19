@@ -29,19 +29,24 @@ Contributions are welcomed! Read the [Contributing Guide](CONTRIBUTING.md) for m
 
 To get started:
 
-1. Install [node.js](https://nodejs.org/).
+1. Install [node.js](https://nodejs.org/) (version 24 or later).
 3. Clone the repository.
 4. After navigating into the project directory, install project dependencies by running `npm install`.
+5. Install the browsers used to run tests by running `npx playwright install`. Tests run against Chromium, Firefox, and WebKit, so all three must be installed. (On Linux, use `npx playwright install --with-deps` to also install the required system dependencies.)
 
 ### Scripts
 
-To run tests a single time, run the following command:
+Tests are run with [Playwright](https://playwright.dev/) against Chromium, Firefox, and WebKit. To build the project and run the full test suite once, run the following command:
 
 `npm run test`
 
-To run tests continually while developing, run the following command:
+To run the test suite without rebuilding, run the following command:
 
-`npm run test:watch`
+`npm run test:unit`
+
+To develop against the tests interactively (Playwright's UI mode lets you watch, re-run, and debug individual tests), run the following command after building at least once:
+
+`npx playwright test --ui`
 
 To run a sandbox where you can manually test your changes (manipulate the sandbox directory as desired), run the following command:
 

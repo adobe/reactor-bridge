@@ -10,388 +10,287 @@
  * governing permissions and limitations under the License.
  ****************************************************************************************/
 
-import { loadIframe, ERROR_CODES } from '../parent';
+const { test, expect } = require('@playwright/test');
 
-describe('parent', () => {
-  let bridge;
-  let iframe;
+const CHILD_ORIGIN = 'http://localhost:9800';
 
-  beforeEach(() => {
-    iframe = document.createElement('iframe');
+// Sets up an iframe pointing at the given fixture and calls loadIframe() in the
+// page context. Stores bridge/result/error on window so subsequent evaluate()
+// calls can reach them.
+async function setupBridge(page, fixturePath, options = {}) {
+  await page.evaluate(({ src, opts }) => {
+    const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
+    iframe.src = src;
+    window._iframe = iframe;
+    window._bridgeResult = null;
+    window._bridgeError = null;
+    window._bridge = window.ExtensionBridge.loadIframe({ iframe, ...opts });
+    window._bridge.promise
+      .then(child => { window._bridgeResult = child; })
+      .catch(err  => { window._bridgeError  = err instanceof Error ? err.message : String(err); });
+  }, { src: `${CHILD_ORIGIN}/${fixturePath}`, opts: options });
+}
+
+async function waitForBridge(page) {
+  await page.waitForFunction(
+    () => window._bridgeResult !== null || window._bridgeError !== null,
+    { timeout: 15000 }
+  );
+}
+
+async function callChildMethod(page, method) {
+  await page.evaluate(m => {
+    window._childResult = undefined;
+    window._bridgeResult[m]()
+      .then(v => { window._childResult = v === undefined ? '__undefined__' : v; })
+      .catch(e => { window._childResult = { __error: e.message || String(e) }; });
+  }, method);
+  await page.waitForFunction(() => window._childResult !== undefined, { timeout: 10000 });
+  return page.evaluate(() =>
+    window._childResult === '__undefined__' ? undefined : window._childResult
+  );
+}
+
+test.describe('parent', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/test-harness.html');
   });
 
-  afterEach(() => {
-    if (bridge) {
-      bridge.destroy();
-    }
-    if (document.body.contains(iframe)) {
-      document.body.removeChild(iframe);
-    }
-  });
-
-  it('provides a bridge API', done => {
-    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    expect(bridge.destroy).toEqual(jasmine.any(Function));
-    bridge.promise.then(child => {
-      expect(child.init).toEqual(jasmine.any(Function));
-      expect(child.validate).toEqual(jasmine.any(Function));
-      expect(child.getSettings).toEqual(jasmine.any(Function));
-      done();
-    });
-  });
-
-  it('bridgepath is properly set and the iframe loads with a functional bridge API', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/nested-app/`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    expect(bridge.destroy).toEqual(jasmine.any(Function));
-    bridge.promise.then(child => {
-    expect(child.init).toEqual(jasmine.any(Function));
-      expect(child.validate).toEqual(jasmine.any(Function));
-      expect(child.getSettings).toEqual(jasmine.any(Function));
-      child.getSettings().then(({childScriptPath})=>{
-        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/source/nested-app/extensionbridge/extensionbridge-child.js`);
-        done();
-      });
-    });
-  });
-
-  it('bridgepath contains dots child script defaults to root of parent', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/../../../nested-app/`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    expect(bridge.destroy).toEqual(jasmine.any(Function));
-    bridge.promise.then(child => {
-    expect(child.init).toEqual(jasmine.any(Function));
-      expect(child.validate).toEqual(jasmine.any(Function));
-      expect(child.getSettings).toEqual(jasmine.any(Function));
-      child.getSettings().then(({childScriptPath})=>{
-        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
-        done();
-      });
-    });
-  });
-
-  it('bridgepath contains * child script defaults to root of parent', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/*nested-app/`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    expect(bridge.destroy).toEqual(jasmine.any(Function));
-    bridge.promise.then(child => {
-    expect(child.init).toEqual(jasmine.any(Function));
-      expect(child.validate).toEqual(jasmine.any(Function));
-      expect(child.getSettings).toEqual(jasmine.any(Function));
-      child.getSettings().then(({childScriptPath})=>{
-        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
-        done();
-      });
-    });
-  });
-
-  it('bridgepath does not start with / child script defaults to root of parent', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=source/nested-app/`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    expect(bridge.destroy).toEqual(jasmine.any(Function));
-    bridge.promise.then(child => {
-    expect(child.init).toEqual(jasmine.any(Function));
-      expect(child.validate).toEqual(jasmine.any(Function));
-      expect(child.getSettings).toEqual(jasmine.any(Function));
-      child.getSettings().then(({childScriptPath})=>{
-        expect(childScriptPath).toEqual(`http://${location.hostname}:9801/extensionbridge/extensionbridge-child.js`);
-        done();
-      });
-    });
-  });
-
-  it('proxies extension view API when values are returned', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewApiReturningValues.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      Promise.all([
-        child.init(),
-        child.validate(),
-        child.getSettings()
-      ]).then(result => {
-        expect(result).toEqual([
-          undefined,
-          false,
-          {
-            foo: 'bar'
-          }
-        ]);
-        done();
-      });
-    });
-  });
-
-  it('proxies extension view API when promises are returned', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionViewApiReturningPromises.html`
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      Promise.all([
-        child.init(),
-        child.validate(),
-        child.getSettings()
-      ]).then(result => {
-        expect(result).toEqual([
-          undefined,
-          false,
-          {
-            foo: 'bar'
-          }
-        ]);
-        done();
-      });
-    });
-  });
-
-  it('returns a rejected promise if validate returns a non-boolean value', done => {
-    iframe.src = `http://${location.hostname}:9800/invalidReturnsValues.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      child.validate().then(
-        () => {},
-        error => {
-          expect(error.message)
-            .toContain('The extension attempted to return a non-boolean value from validate');
-          done();
-        }
-      );
-    });
-  });
-
-  it('returns a rejected promise if getSettings returns a non-object value', done => {
-    iframe.src = `http://${location.hostname}:9800/invalidReturnsValues.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      child.getSettings().then(
-        () => {},
-        error => {
-          expect(error.message)
-            .toContain('The extension attempted to return a non-object value from getSettings');
-          done();
-        }
-      );
-    });
-  });
-
-  it('returns a rejected promise if validate returns a non-boolean promise', done => {
-    iframe.src = `http://${location.hostname}:9800/invalidReturnsPromises.html`
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      child.validate().then(
-        () => {},
-        error => {
-          expect(error.message)
-            .toContain('The extension attempted to return a non-boolean value from validate');
-          done();
-        }
-      );
-    });
-  });
-
-  it('returns a rejected promise if getSettings returns a non-object promise', done => {
-    iframe.src = `http://${location.hostname}:9800/invalidReturnsPromises.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      child.getSettings().then(
-        () => {},
-        error => {
-          expect(error.message)
-            .toContain('The extension attempted to return a non-object value from getSettings');
-          done();
-        }
-      );
-    });
-  });
-
-  it('times out if extension view doesn\'t register with bridge', done => {
-    iframe.src = `http://${location.hostname}:9800/unregisteredInit.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(
-      () => {},
-      error => {
-        expect(error).toBe('renderTimeout');
-        done();
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => {
+      try { window._bridge?.destroy(); } catch (e) {}
+      if (window._iframe?.parentNode) {
+        window._iframe.parentNode.removeChild(window._iframe);
       }
+    });
+  });
+
+  test('provides a bridge API', async ({ page }) => {
+    await setupBridge(page, 'simpleSuccess.html');
+    await waitForBridge(page);
+
+    const types = await page.evaluate(() => ({
+      init: typeof window._bridgeResult.init,
+      validate: typeof window._bridgeResult.validate,
+      getSettings: typeof window._bridgeResult.getSettings,
+      destroy: typeof window._bridge.destroy
+    }));
+    expect(types.destroy).toBe('function');
+    expect(types.init).toBe('function');
+    expect(types.validate).toBe('function');
+    expect(types.getSettings).toBe('function');
+  });
+
+  test('bridgepath is properly set and the iframe loads with a functional bridge API', async ({ page }) => {
+    await setupBridge(page, 'extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/nested-app/');
+    await waitForBridge(page);
+
+    const types = await page.evaluate(() => ({
+      init: typeof window._bridgeResult.init,
+      validate: typeof window._bridgeResult.validate,
+      getSettings: typeof window._bridgeResult.getSettings
+    }));
+    expect(types.init).toBe('function');
+    expect(types.validate).toBe('function');
+    expect(types.getSettings).toBe('function');
+
+    const { childScriptPath } = await callChildMethod(page, 'getSettings');
+    expect(childScriptPath).toEqual('http://localhost:9801/source/nested-app/extensionbridge/extensionbridge-child.js');
+  });
+
+  test('bridgepath contains dots child script defaults to root of parent', async ({ page }) => {
+    await setupBridge(page, 'extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/../../../nested-app/');
+    await waitForBridge(page);
+
+    const { childScriptPath } = await callChildMethod(page, 'getSettings');
+    expect(childScriptPath).toEqual('http://localhost:9801/extensionbridge/extensionbridge-child.js');
+  });
+
+  test('bridgepath contains * child script defaults to root of parent', async ({ page }) => {
+    await setupBridge(page, 'extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=/source/*nested-app/');
+    await waitForBridge(page);
+
+    const { childScriptPath } = await callChildMethod(page, 'getSettings');
+    expect(childScriptPath).toEqual('http://localhost:9801/extensionbridge/extensionbridge-child.js');
+  });
+
+  test('bridgepath does not start with / child script defaults to root of parent', async ({ page }) => {
+    await setupBridge(page, 'extensionViewGetSettingsReturnChildScriptPath.html?bridgepath=source/nested-app/');
+    await waitForBridge(page);
+
+    const { childScriptPath } = await callChildMethod(page, 'getSettings');
+    expect(childScriptPath).toEqual('http://localhost:9801/extensionbridge/extensionbridge-child.js');
+  });
+
+  test('proxies extension view API when values are returned', async ({ page }) => {
+    await setupBridge(page, 'extensionViewApiReturningValues.html');
+    await waitForBridge(page);
+
+    const initResult = await callChildMethod(page, 'init');
+    const validateResult = await callChildMethod(page, 'validate');
+    const settingsResult = await callChildMethod(page, 'getSettings');
+    expect(initResult).toBeUndefined();
+    expect(validateResult).toBe(false);
+    expect(settingsResult).toEqual({ foo: 'bar' });
+  });
+
+  test('proxies extension view API when promises are returned', async ({ page }) => {
+    await setupBridge(page, 'extensionViewApiReturningPromises.html');
+    await waitForBridge(page);
+
+    const initResult = await callChildMethod(page, 'init');
+    const validateResult = await callChildMethod(page, 'validate');
+    const settingsResult = await callChildMethod(page, 'getSettings');
+    expect(initResult).toBeUndefined();
+    expect(validateResult).toBe(false);
+    expect(settingsResult).toEqual({ foo: 'bar' });
+  });
+
+  test('returns a rejected promise if validate returns a non-boolean value', async ({ page }) => {
+    await setupBridge(page, 'invalidReturnsValues.html');
+    await waitForBridge(page);
+
+    const result = await callChildMethod(page, 'validate');
+    expect(result.__error).toContain('The extension attempted to return a non-boolean value from validate');
+  });
+
+  test('returns a rejected promise if getSettings returns a non-object value', async ({ page }) => {
+    await setupBridge(page, 'invalidReturnsValues.html');
+    await waitForBridge(page);
+
+    const result = await callChildMethod(page, 'getSettings');
+    expect(result.__error).toContain('The extension attempted to return a non-object value from getSettings');
+  });
+
+  test('returns a rejected promise if validate returns a non-boolean promise', async ({ page }) => {
+    await setupBridge(page, 'invalidReturnsPromises.html');
+    await waitForBridge(page);
+
+    const result = await callChildMethod(page, 'validate');
+    expect(result.__error).toContain('The extension attempted to return a non-boolean value from validate');
+  });
+
+  test('returns a rejected promise if getSettings returns a non-object promise', async ({ page }) => {
+    await setupBridge(page, 'invalidReturnsPromises.html');
+    await waitForBridge(page);
+
+    const result = await callChildMethod(page, 'getSettings');
+    expect(result.__error).toContain('The extension attempted to return a non-object value from getSettings');
+  });
+
+  test('times out if extension view doesn\'t register with bridge', async ({ page }) => {
+    await setupBridge(page, 'unregisteredInit.html');
+    await waitForBridge(page);
+
+    const error = await page.evaluate(() => window._bridgeError);
+    expect(error).toBe('renderTimeout');
+  });
+
+  test('rejects load promise if extension view init function throws an error', async ({ page }) => {
+    await setupBridge(page, 'initFailure.html');
+    await waitForBridge(page);
+
+    const error = await page.evaluate(() => window._bridgeError);
+    expect(error).toBe('bad things');
+  });
+
+  test('returns a rejected promise if extension view has not registered getSettings (or validate) function', async ({ page }) => {
+    await setupBridge(page, 'unregisteredGetSettings.html');
+    await waitForBridge(page);
+
+    const result = await callChildMethod(page, 'getSettings');
+    expect(result.__error).toContain(
+      'Unable to call getSettings on the extension. The extension must ' +
+      'register a getSettings function using extensionBridge.register().'
     );
   });
 
-  it('rejects load promise if extension view init function throws an error', done => {
-    iframe.src = `http://${location.hostname}:9800/initFailure.html`
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(
-      () => {},
-      error => {
-        expect(error.message).toBe('bad things');
-        done();
-      }
-    );
-  });
-
-  it('returns a rejected promise if extension view has not registered ' +
-      'getSettings (or validate) function', done => {
-    iframe.src = `http://${location.hostname}:9800/unregisteredGetSettings.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      child.getSettings().then(
-        () => {},
-        error => {
-          expect(error.message)
-            .toContain('Unable to call getSettings on the extension. The extension must ' +
-              'register a getSettings function using extensionBridge.register().');
-          done();
-        }
-      );
-    });
-  });
-
-  it('proxies lens API', done => {
-    iframe.src = `http://${location.hostname}:9800/lensApi.html`;
-    const addResultSuffix = options => options.testOption + ' result';
-
-    bridge = loadIframe({
-      iframe,
-      openCodeEditor: addResultSuffix,
-      openRegexTester: addResultSuffix,
-      openDataElementSelector: addResultSuffix
-    });
-
-    bridge.promise.then(child => {
-      // We abuse getSettings() for our testing purposes.
-      child.getSettings().then(response => {
-        expect(response.results).toEqual([
-          'code editor result',
-          'regex tester result',
-          'data element selector result'
-        ]);
-        done();
+  test('proxies lens API', async ({ page }) => {
+    // Functions can't be serialized through page.evaluate(), so set up inline
+    await page.evaluate(src => {
+      const addResultSuffix = options => options.testOption + ' result';
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      iframe.src = src;
+      window._iframe = iframe;
+      window._bridgeResult = null;
+      window._bridgeError = null;
+      window._bridge = window.ExtensionBridge.loadIframe({
+        iframe,
+        openCodeEditor: addResultSuffix,
+        openRegexTester: addResultSuffix,
+        openDataElementSelector: addResultSuffix
       });
-    });
+      window._bridge.promise
+        .then(child => { window._bridgeResult = child; })
+        .catch(err  => { window._bridgeError  = err instanceof Error ? err.message : String(err); });
+    }, `${CHILD_ORIGIN}/lensApi.html`);
+    await waitForBridge(page);
+
+    const response = await callChildMethod(page, 'getSettings');
+    expect(response.results).toEqual([
+      'code editor result',
+      'regex tester result',
+      'data element selector result'
+    ]);
   });
 
-  it('rejects promise when connection fails', done => {
-    jasmine.clock().install();
+  test('rejects promise when connection fails', async ({ page }) => {
+    await setupBridge(page, 'connectionFailure.html', { connectionTimeoutDuration: 100 });
+    await waitForBridge(page);
 
-    iframe.src = `http://${location.hostname}:9800/connectionFailure.html`;
-    bridge = loadIframe({
-      iframe
-    });
-
-    bridge.promise.then(child => {
-      // Do nothing.
-    }, err => {
-      expect(err).toBe(ERROR_CODES.CONNECTION_TIMEOUT);
-      jasmine.clock().uninstall();
-      done();
-    });
-
-    jasmine.clock().tick(10000);
+    const error = await page.evaluate(() => window._bridgeError);
+    expect(error).toBe('connectionTimeout');
   });
 
-  it('rejects promise when destroyed', done => {
-    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
-    bridge = loadIframe({
-      iframe
-    });
+  test('rejects promise when destroyed', async ({ page }) => {
+    await page.evaluate(src => {
+      const iframe = document.createElement('iframe');
+      document.body.appendChild(iframe);
+      iframe.src = src;
+      window._iframe = iframe;
+      window._bridgeResult = null;
+      window._bridgeError = null;
+      window._bridge = window.ExtensionBridge.loadIframe({ iframe });
+      window._bridge.promise
+        .then(child => { window._bridgeResult = child; })
+        .catch(err  => { window._bridgeError  = err instanceof Error ? err.message : String(err); });
+      window._bridge.destroy();
+    }, `${CHILD_ORIGIN}/simpleSuccess.html`);
 
-    bridge.promise.then(child => {
-      // Do nothing.
-    }, err => {
-      expect(err).toBe(ERROR_CODES.DESTROYED);
-      done();
-    });
+    await page.waitForFunction(
+      () => window._bridgeResult !== null || window._bridgeError !== null,
+      { timeout: 5000 }
+    );
 
-    bridge.destroy();
+    const error = await page.evaluate(() => window._bridgeError);
+    expect(error).toBe('destroyed');
   });
 
-  it('allows debugging to be enabled', (done) => {
-    spyOn(console, 'log');
+  test('allows debugging to be enabled', async ({ page }) => {
+    const logs = [];
+    page.on('console', msg => logs.push(msg.text()));
 
-    iframe.src = `http://${location.hostname}:9800/simpleSuccess.html`;
-    bridge = loadIframe({
-      iframe,
-      debug: true
-    });
+    await setupBridge(page, 'simpleSuccess.html', { debug: true });
+    await waitForBridge(page);
 
-    expect(console.log).toHaveBeenCalledWith('[Penpal]', 'Parent: Awaiting handshake');
-    bridge.promise.then(done);
+    expect(logs.some(m => m.includes('[Penpal]') && m.includes('Awaiting handshake'))).toBe(true);
   });
 
-  it('times out if extension get settings doesn\'t respond in timely manner', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`;
-    bridge = loadIframe({
-      iframe,
-      extensionResponseTimeoutDuration: 100
-    });
+  test('times out if extension get settings doesn\'t respond in timely manner', async ({ page }) => {
+    await setupBridge(page, 'extensionTookTooLongToRespond.html', { extensionResponseTimeoutDuration: 100 });
+    await waitForBridge(page);
 
-    bridge.promise.then(child => {
-      child.getSettings().then(
-        () => {},
-        error => {
-          expect(error).toBe('extensionResponseTimeout');
-          done();
-        }
-      );
-    });
+    const result = await callChildMethod(page, 'getSettings');
+    expect(result.__error).toBe('extensionResponseTimeout');
   });
 
-  it('times out if extension validate doesn\'t respond in timely manner', done => {
-    iframe.src = `http://${location.hostname}:9800/extensionTookTooLongToRespond.html`;
-    bridge = loadIframe({
-      iframe,
-      extensionResponseTimeoutDuration: 100
-    });
+  test('times out if extension validate doesn\'t respond in timely manner', async ({ page }) => {
+    await setupBridge(page, 'extensionTookTooLongToRespond.html', { extensionResponseTimeoutDuration: 100 });
+    await waitForBridge(page);
 
-    bridge.promise.then(child => {
-      child.validate().then(
-        () => {},
-        error => {
-          expect(error).toBe('extensionResponseTimeout');
-          done();
-        }
-      );
-    });
+    const result = await callChildMethod(page, 'validate');
+    expect(result.__error).toBe('extensionResponseTimeout');
   });
 });

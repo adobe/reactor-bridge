@@ -16,25 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - uses: actions/cache@v4
         id: npm-cache
         with:
-          node-version: 'lts/iron'
           path: '**/node_modules'
-          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
-      - name: Setup kernel for react native, increase watchers
-        run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
       - name: Install dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
-      - uses: saucelabs/sauce-connect-action@v1
-        with:
-          username: ${{ secrets.SAUCE_USERNAME }}
-          accessKey: ${{ secrets.SAUCE_ACCESS_KEY }}
-          noSSLBumpDomains: all
-          noProxyCaching: true
-          tunnelIdentifier: github-action-tunnel
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
       - run: npm test
-        env:
-          SAUCE_USERNAME: ${{secrets.SAUCE_USERNAME}}
-          SAUCE_ACCESS_KEY: ${{secrets.SAUCE_ACCESS_KEY}}
